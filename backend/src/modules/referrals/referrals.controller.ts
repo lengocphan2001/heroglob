@@ -1,0 +1,29 @@
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { ReferralsService } from './referrals.service';
+
+class RegisterDto {
+  walletAddress!: string;
+  refCode!: string;
+}
+
+@Controller('referrals')
+export class ReferralsController {
+  constructor(private readonly referralsService: ReferralsService) {}
+
+  @Get('code')
+  getCode(@Query('walletAddress') walletAddress: string) {
+    if (!walletAddress?.trim()) return { code: null };
+    return this.referralsService.getOrCreateCode(walletAddress);
+  }
+
+  @Post('register')
+  register(@Body() dto: RegisterDto) {
+    return this.referralsService.registerReferral(dto.walletAddress, dto.refCode);
+  }
+
+  @Get('stats')
+  getStats(@Query('walletAddress') walletAddress: string) {
+    if (!walletAddress?.trim()) return { totalReferred: 0 };
+    return this.referralsService.getStats(walletAddress);
+  }
+}

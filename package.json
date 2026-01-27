@@ -2,13 +2,19 @@
   "name": "heroglob",
   "version": "0.1.0",
   "private": true,
+  "workspaces": ["admin", "backend"],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "dev:admin": "npm run dev -w admin",
+    "dev:backend": "npm run start:dev -w backend",
+    "build:admin": "npm run build -w admin",
+    "build:backend": "npm run build -w backend"
   },
   "dependencies": {
+    "lucide-react": "^0.460.0",
     "next": "16.1.4",
     "react": "19.2.3",
     "react-dom": "19.2.3"
