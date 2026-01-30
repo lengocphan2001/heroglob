@@ -22,7 +22,7 @@ export function HeroBanner({
   stats,
 }: HeroBannerProps) {
   return (
-    <div className="group relative h-80 w-full overflow-hidden rounded-3xl soft-shadow">
+    <div className="group relative h-40 w-full overflow-hidden rounded-3xl soft-shadow">
       <div
         className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
         style={{

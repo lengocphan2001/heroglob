@@ -46,6 +46,9 @@ export async function api<T>(
     const err = await res.json().catch(() => ({ message: res.statusText }));
     throw new Error((err as { message?: string }).message ?? 'Request failed');
   }
+  if (res.status === 204) {
+    return null as T;
+  }
   return res.json() as Promise<T>;
 }
 

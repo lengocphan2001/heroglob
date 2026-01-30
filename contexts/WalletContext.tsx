@@ -10,6 +10,8 @@ import {
   type ReactNode,
 } from 'react';
 import { BSC_CHAIN_ID, BSC_PARAMS } from '@/lib/wallet/tokens';
+import { loginWallet } from '@/lib/auth';
+import Cookies from 'js-cookie';
 
 declare global {
   interface Window {
@@ -94,6 +96,17 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           // keep previous chainId
         }
       }
+
+      // Auto login/register backend
+      try {
+        const refCode = localStorage.getItem('referral_code');
+        const { access_token } = await loginWallet(address, refCode);
+        Cookies.set('token', access_token, { expires: 7 });
+      } catch (err) {
+        console.error('Login failed:', err);
+        // We don't block wallet connection if login fails, but maybe show error?
+      }
+
       setState({ address, chainId, isConnecting: false, error: null });
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Kết nối thất bại';
@@ -129,7 +142,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           setState((s) => ({ ...s, address, chainId }));
         });
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {

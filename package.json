@@ -2,7 +2,10 @@
   "name": "heroglob",
   "version": "0.1.0",
   "private": true,
-  "workspaces": ["admin", "backend"],
+  "workspaces": [
+    "admin",
+    "backend"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,6 +17,8 @@
     "build:backend": "npm run build -w backend"
   },
   "dependencies": {
+    "@types/js-cookie": "^3.0.6",
+    "js-cookie": "^3.0.5",
     "lucide-react": "^0.460.0",
     "next": "16.1.4",
     "react": "19.2.3",

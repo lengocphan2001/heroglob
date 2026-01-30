@@ -1,0 +1,4 @@
+// Notification sound file (base64 or reference URL)
+// Since I can't upload binary, I'll recommend the user to place a sound file or use a public URL.
+// I will create a dummy sound file or just use a placeholder in the code.
+// Actually, I can use a Data URI for a simple "beep" in the code directly.

@@ -18,7 +18,7 @@ const variants: Record<ButtonVariant, string> = {
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'icon';
   loading?: boolean;
 };
 
@@ -26,6 +26,7 @@ const sizeClass = {
   sm: 'h-8 px-3 text-sm',
   md: 'h-10 px-4 text-sm',
   lg: 'h-12 px-6 text-base',
+  icon: 'h-8 w-8 p-0',
 };
 
 export const Button = forwardRef<HTMLButtonElement, Props>(

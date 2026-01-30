@@ -10,7 +10,7 @@ type Props = {
 export function SectionTitle({
   title,
   viewAllHref,
-  viewAllLabel = 'View All',
+  viewAllLabel = 'Xem tất cả',
   icon,
 }: Props) {
   return (

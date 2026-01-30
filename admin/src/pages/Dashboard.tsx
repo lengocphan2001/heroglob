@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import {
   LucideTrendingUp,
   LucideUsers,
@@ -13,45 +14,8 @@ import {
   TableRow,
 } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
-
-const stats = [
-  {
-    label: 'Tổng doanh thu',
-    value: '124.5M',
-    change: '+12.5%',
-    icon: LucideDollarSign,
-    color: 'bg-emerald-500',
-  },
-  {
-    label: 'Người dùng',
-    value: '2,840',
-    change: '+8.2%',
-    icon: LucideUsers,
-    color: 'bg-indigo-500',
-  },
-  {
-    label: 'Đơn hàng',
-    value: '1,204',
-    change: '-2.4%',
-    icon: LucideShoppingCart,
-    color: 'bg-amber-500',
-  },
-  {
-    label: 'Tăng trưởng',
-    value: '24.3%',
-    change: '+4.1%',
-    icon: LucideTrendingUp,
-    color: 'bg-sky-500',
-  },
-];
-
-const recentOrders = [
-  { id: '#ORD-001', customer: 'Nguyễn Văn A', amount: '1,250,000', status: 'completed' as const },
-  { id: '#ORD-002', customer: 'Trần Thị B', amount: '890,000', status: 'processing' as const },
-  { id: '#ORD-003', customer: 'Lê Văn C', amount: '2,100,000', status: 'completed' as const },
-  { id: '#ORD-004', customer: 'Phạm Thị D', amount: '450,000', status: 'pending' as const },
-  { id: '#ORD-005', customer: 'Hoàng Văn E', amount: '1,780,000', status: 'completed' as const },
-];
+import { Button } from '../components/ui/Button';
+import { getDashboardStats, type DashboardStats } from '../api/stats';
 
 const statusVariant = {
   completed: 'success' as const,
@@ -60,15 +24,70 @@ const statusVariant = {
 };
 
 export function Dashboard() {
+  const [data, setData] = useState<DashboardStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadStats = () => {
+    setLoading(true);
+    getDashboardStats()
+      .then(setData)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Lỗi tải dữ liệu'))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    loadStats();
+  }, []);
+
+  const stats = [
+    {
+      label: 'Tổng doanh thu',
+      value: data ? data.revenue.formatted : '...',
+      change: '+0%', // Placeholder until historical data implemented
+      icon: LucideDollarSign,
+      color: 'bg-emerald-500',
+    },
+    {
+      label: 'Người dùng',
+      value: data ? data.users.total.toLocaleString() : '...',
+      change: data?.users.growth || '+0%',
+      icon: LucideUsers,
+      color: 'bg-indigo-500',
+    },
+    {
+      label: 'Đơn hàng',
+      value: data ? data.orders.total.toLocaleString() : '...',
+      change: data?.orders.growth || '+0%',
+      icon: LucideShoppingCart,
+      color: 'bg-amber-500',
+    },
+    {
+      label: 'Tăng trưởng',
+      value: '24.3%', // Placeholder
+      change: '+4.1%',
+      icon: LucideTrendingUp,
+      color: 'bg-sky-500',
+    },
+  ];
+
+  if (loading) return <div className="p-8 text-center text-zinc-500">Đang tải dữ liệu...</div>;
+  if (error) return <div className="p-8 text-center text-red-500">Lỗi: {error}</div>;
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold text-zinc-900 dark:text-zinc-100">
-          Dashboard
-        </h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Tổng quan hoạt động và thống kê
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-medium text-zinc-900 dark:text-zinc-100">
+            Đơn hàng gần đây
+          </h2>
+          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+            Các giao dịch mới nhất từ ​​người dùng.
+          </p>
+        </div>
+        <Button variant="outline" onClick={loadStats} disabled={loading}>
+          Làm mới
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -113,22 +132,26 @@ export function Dashboard() {
             </TableRow>
           </thead>
           <TableBody>
-            {recentOrders.map((row) => (
-              <TableRow key={row.id}>
-                <TableCell className="font-medium">{row.id}</TableCell>
-                <TableCell>{row.customer}</TableCell>
-                <TableCell>{row.amount} ₫</TableCell>
-                <TableCell>
-                  <Badge variant={statusVariant[row.status]}>
-                    {row.status === 'completed'
-                      ? 'Hoàn thành'
-                      : row.status === 'processing'
-                        ? 'Đang xử lý'
-                        : 'Chờ xử lý'}
-                  </Badge>
+            {data?.recentOrders.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4 text-zinc-500">
+                  Chưa có đơn hàng nào
                 </TableCell>
               </TableRow>
-            ))}
+            ) : (
+              data?.recentOrders.map((row) => (
+                <TableRow key={row.id}>
+                  <TableCell className="font-medium">#{row.id}</TableCell>
+                  <TableCell className="max-w-[150px] truncate" title={row.customer}>{row.customer}</TableCell>
+                  <TableCell>{row.amount}</TableCell>
+                  <TableCell>
+                    <Badge variant={statusVariant[row.status as keyof typeof statusVariant] || 'default'}>
+                      {row.status}
+                    </Badge>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
           </TableBody>
         </Table>
       </Card>

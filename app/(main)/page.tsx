@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { TrendingUp } from 'lucide-react';
+import { TrendingUp, Zap } from 'lucide-react';
 import { SearchInput } from '@/components/ui';
 import {
   HeroBanner,
@@ -13,6 +13,167 @@ import {
 import { HERO_IMAGE } from '@/lib/data/home';
 import { getProducts, type Product } from '@/lib/api/products';
 import { formatPriceDisplay } from '@/lib/formatPrice';
+import { useWallet } from '@/contexts/WalletContext';
+import { getUsdtAddress, getUsdtDecimals } from '@/lib/wallet/tokens';
+import { sendTokenTransfer, toRawAmount, waitForTransaction, checkBalance } from '@/lib/wallet/transfer';
+import { PAYMENT_RECEIVER_ADDRESS } from '@/lib/constants';
+import { createOrder } from '@/lib/api/orders';
+import { TransactionModal } from '@/components/wallet/TransactionModal';
+import { ReferralSection } from '@/components/referral/ReferralSection';
+
+function PowerActivation() {
+  const { isConnected, address, chainId } = useWallet();
+  const [amount, setAmount] = useState('');
+  const [balance, setBalance] = useState('0.00');
+  const [loading, setLoading] = useState(false);
+  const [txModal, setTxModal] = useState<{
+    open: boolean;
+    status: 'confirming' | 'pending' | 'success' | 'error';
+    amountDisplay?: string;
+    tokenLabel?: string;
+    productTitle?: string;
+    txHash?: string;
+    error?: string;
+  }>({ open: false, status: 'confirming' });
+
+  // Fetch Balance
+  useEffect(() => {
+    if (!isConnected || !address || !chainId) return;
+    const fetchBalance = async () => {
+      const ethereum = (window as any).ethereum;
+      if (!ethereum) return;
+      const usdtAddr = getUsdtAddress(chainId);
+      if (!usdtAddr) return;
+
+      try {
+        // Raw balance call
+        const data = '0x70a08231' + address.slice(2).padStart(64, '0');
+        const hex = await ethereum.request({ method: 'eth_call', params: [{ to: usdtAddr, data }, 'latest'] }) as string;
+        const bal = BigInt(hex);
+        const decimals = getUsdtDecimals(chainId); // usually 18 for BSC
+        // Simple format
+        const divisor = BigInt(10) ** BigInt(decimals);
+        const intPart = bal / divisor;
+        const fracPart = (bal % divisor).toString().padStart(decimals, '0').slice(0, 2);
+        setBalance(`${intPart}.${fracPart}`);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchBalance();
+    const i = setInterval(fetchBalance, 10000);
+    return () => clearInterval(i);
+  }, [isConnected, address, chainId]);
+
+  const handleActivate = async () => {
+    if (!isConnected) return alert("Vui lòng kết nối ví!");
+    if (!amount) return;
+    const val = parseFloat(amount);
+    if (isNaN(val) || val < 100) return alert("Tối thiểu 100 USDT");
+
+    const ethereum = (window as any).ethereum;
+    const usdtAddress = getUsdtAddress(chainId);
+    if (!usdtAddress) return alert("Mạng không hỗ trợ USDT");
+    if (!PAYMENT_RECEIVER_ADDRESS) return alert("Lỗi cấu hình ví nhận");
+
+    setTxModal({
+      open: true,
+      status: 'confirming',
+      amountDisplay: val.toString(),
+      tokenLabel: 'USDT',
+      productTitle: 'Kích hoạt Sức Mạnh'
+    });
+
+    try {
+      const raw = toRawAmount(amount, getUsdtDecimals(chainId));
+
+      await checkBalance(ethereum, address!, usdtAddress, raw);
+
+      setTxModal(prev => ({ ...prev, status: 'pending' })); // Pending user sign
+
+      const txHash = await sendTokenTransfer(
+        ethereum,
+        address!,
+        usdtAddress,
+        PAYMENT_RECEIVER_ADDRESS,
+        raw
+      );
+
+      setTxModal(prev => ({ ...prev, status: 'pending', txHash })); // Pending mining
+
+      await waitForTransaction(ethereum, txHash);
+
+      await createOrder({
+        walletAddress: address!,
+        tokenType: 'usdt',
+        amount: amount,
+        txHash,
+        // No productId
+      });
+
+      setTxModal(prev => ({ ...prev, status: 'success' }));
+      setAmount('');
+    } catch (e: any) {
+      setTxModal(prev => ({
+        ...prev,
+        status: 'error',
+        error: e.message || "Giao dịch thất bại"
+      }));
+    }
+  };
+
+  return (
+    <>
+      <TransactionModal
+        open={txModal.open}
+        status={txModal.status}
+        amountDisplay={txModal.amountDisplay ?? ''}
+        tokenLabel={txModal.tokenLabel ?? ''}
+        productTitle={txModal.productTitle}
+        txHash={txModal.txHash}
+        error={txModal.error}
+        onClose={() => setTxModal(p => ({ ...p, open: false }))}
+      />
+      <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="mb-3 text-center">
+          <h3 className="flex items-center justify-center gap-2 text-lg font-bold uppercase text-slate-800">
+            <Zap className="h-5 w-5 fill-yellow-400 text-yellow-500" />
+            Kích hoạt Sức Mạnh
+          </h3>
+        </div>
+
+        <p className="mb-3 text-xs text-slate-500">
+          Tối thiểu 100 USDT. Lợi nhuận hàng ngày 1% - 1.5%
+        </p>
+
+        <div className="relative mb-2">
+          <input
+            type="number"
+            placeholder="Nhập số tiền"
+            className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium focus:border-[var(--color-primary)] focus:outline-none"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-emerald-100 px-2 py-1 text-xs font-bold text-emerald-700">
+            USDT
+          </div>
+        </div>
+
+        <div className="mb-4 text-xs font-medium text-slate-500">
+          Số dư ví: <span className="text-slate-900">{balance} USDT</span>
+        </div>
+
+        <button
+          onClick={handleActivate}
+          disabled={!amount}
+          className="w-full rounded-lg bg-zinc-900 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+        >
+          Kích hoạt ngay
+        </button>
+      </div>
+    </>
+  );
+}
 
 export default function Home() {
   const [search, setSearch] = useState('');
@@ -46,33 +207,41 @@ export default function Home() {
     <>
       <div className="px-4 py-5">
         <SearchInput
-          placeholder="Search Metaverse & NFTs"
+          placeholder="Tìm kiếm Metaverse & NFTs"
           value={search}
           onChange={setSearch}
-          onFilterClick={() => {}}
+          onFilterClick={() => { }}
         />
       </div>
 
       <div className="px-4 pb-8">
         <HeroBanner
           imageUrl={HERO_IMAGE}
-          badge="Live Now"
+          badge="Đang diễn ra"
           title={
             <>
-              Explore the <br /> Neon Sector
+              Khám phá <br /> Neon Sector
             </>
           }
-          description="Discover drops and collectibles."
-          ctaLabel="Enter"
+          description="Khám phá các bộ sưu tập và vật phẩm độc đáo."
+          ctaLabel="Xem ngay"
           ctaHref="/explore"
         />
       </div>
 
+      <div className="px-4 pb-0 mb-6">
+        <PowerActivation />
+      </div>
+
+      <div className="px-4 pb-0 mb-6">
+        <ReferralSection />
+      </div>
+
       <section>
         <SectionTitle
-          title="Trending Collections"
+          title="Bộ sưu tập nổi bật"
           viewAllHref="/explore"
-          viewAllLabel="View All"
+          viewAllLabel="Xem tất cả"
           icon={<TrendingUp className="h-5 w-5 text-[var(--color-primary)]" />}
         />
         {loading ? (
@@ -82,7 +251,7 @@ export default function Home() {
         ) : (
           <div className="hide-scrollbar flex gap-5 overflow-x-auto px-4 pb-6">
             {trending.length === 0 ? (
-              <p className="px-4 text-sm text-slate-500">No products yet.</p>
+              <p className="px-4 text-sm text-slate-500">Chưa có sản phẩm nào.</p>
             ) : (
               trending.map((p) => (
                 <CollectionCard
@@ -99,42 +268,7 @@ export default function Home() {
         )}
       </section>
 
-      <section className="mt-4 px-4">
-        <div className="mb-5 flex items-center justify-between">
-          <h3 className="flex items-center gap-2 text-lg font-bold text-slate-800">
-            Live Auctions
-            <span className="relative flex h-3 w-3" aria-hidden>
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-400 opacity-75" />
-              <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500" />
-            </span>
-          </h3>
-          <Link href="/explore" className="text-sm font-medium text-[var(--color-primary)]">
-            View All
-          </Link>
-        </div>
-        {loading ? (
-          <p className="text-sm text-slate-500">Loading...</p>
-        ) : error ? (
-          <p className="text-sm text-red-600">{error}</p>
-        ) : (
-          <div className="space-y-4">
-            {liveOrFeatured.length === 0 ? (
-              <p className="text-sm text-slate-500">No items yet.</p>
-            ) : (
-              liveOrFeatured.map((p) => (
-                <AuctionCard
-                  key={p.id}
-                  imageUrl={p.imageUrl}
-                  title={p.title}
-                  timeLeft="—"
-                  highestBidValue={floorValue(p)}
-                  onBid={() => {}}
-                />
-              ))
-            )}
-          </div>
-        )}
-      </section>
+
     </>
   );
 }

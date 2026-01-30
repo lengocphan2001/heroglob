@@ -9,7 +9,7 @@ export function Header() {
         </Link>
         <nav className="flex gap-4 text-sm text-zinc-600 dark:text-zinc-400">
           <Link href="/" className="hover:text-zinc-900 dark:hover:text-zinc-100">
-            Home
+            Trang chủ
           </Link>
         </nav>
       </div>

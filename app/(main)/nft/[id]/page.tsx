@@ -10,7 +10,7 @@ import { getProduct, type Product } from '@/lib/api/products';
 import { createOrder } from '@/lib/api/orders';
 import { useWallet } from '@/contexts/WalletContext';
 import { getUsdtAddress, getUsdtDecimals, HERO_TOKEN } from '@/lib/wallet/tokens';
-import { sendTokenTransfer, toRawAmount } from '@/lib/wallet/transfer';
+import { sendTokenTransfer, toRawAmount, waitForTransaction, checkBalance } from '@/lib/wallet/transfer';
 import { PAYMENT_RECEIVER_ADDRESS } from '@/lib/constants';
 import { formatPriceDisplay } from '@/lib/formatPrice';
 
@@ -96,6 +96,9 @@ export default function ProductDetailPage() {
       onConfirmTransfer: async () => {
         try {
           const raw = toRawAmount(priceUsdt, getUsdtDecimals(chainId));
+
+          await checkBalance(ethereum, address, usdtAddress, raw);
+
           const txHash = await sendTokenTransfer(
             ethereum,
             address,
@@ -104,6 +107,10 @@ export default function ProductDetailPage() {
             raw,
           );
           setTxModal((m) => ({ ...m, status: 'pending', txHash }));
+
+          // Wait for transaction to be mined
+          await waitForTransaction(ethereum, txHash);
+
           await createOrder({
             productId: product.id,
             walletAddress: address,
@@ -152,6 +159,9 @@ export default function ProductDetailPage() {
       onConfirmTransfer: async () => {
         try {
           const raw = toRawAmount(priceHero, 18);
+
+          await checkBalance(ethereum, address, HERO_TOKEN.address, raw);
+
           const txHash = await sendTokenTransfer(
             ethereum,
             address,
@@ -160,6 +170,10 @@ export default function ProductDetailPage() {
             raw,
           );
           setTxModal((m) => ({ ...m, status: 'pending', txHash }));
+
+          // Wait for transaction to be mined
+          await waitForTransaction(ethereum, txHash);
+
           await createOrder({
             productId: product.id,
             walletAddress: address,
@@ -225,7 +239,10 @@ export default function ProductDetailPage() {
         }
         error={txModal.error}
         onConfirmTransfer={txModal.onConfirmTransfer}
-        onClose={() => setTxModal((m) => ({ ...m, open: false, onConfirmTransfer: undefined }))}
+        onClose={() => {
+          setTxModal((m) => ({ ...m, open: false, onConfirmTransfer: undefined }));
+          setBuying(null);
+        }}
       />
       <div className="sticky top-0 z-10 flex items-center gap-2 border-b border-slate-100 bg-white/95 px-4 py-3 backdrop-blur">
         <button

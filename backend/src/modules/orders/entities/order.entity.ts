@@ -14,11 +14,11 @@ export class Order {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column({ type: 'int', name: 'product_id' })
+  @Column({ type: 'int', name: 'product_id', nullable: true })
   @Index()
-  productId!: number;
+  productId!: number | null;
 
-  @ManyToOne(() => Product)
+  @ManyToOne(() => Product, { nullable: true })
   @JoinColumn({ name: 'product_id' })
   product?: Product;
 

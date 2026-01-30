@@ -51,7 +51,7 @@ export function TransactionModal({
       ),
       title: isPreConfirm ? 'Đọc kỹ trước khi mở ví' : 'Chờ xác nhận',
       message: isPreConfirm
-        ? 'Sau khi bấm "Mở ví", cửa sổ ví (MetaMask, v.v.) sẽ mở. Trong ví có thể hiển thị sai số tiền – xem khung màu cam bên dưới.'
+        ? 'Sau khi bấm "Mở ví", cửa sổ ví sẽ mở.'
         : 'Vui lòng xác nhận giao dịch trong ví của bạn.',
     },
     pending: {
@@ -100,20 +100,6 @@ export function TransactionModal({
           </h3>
           <p className="mt-2 text-sm text-slate-600">{config.message}</p>
 
-          {/* Cảnh báo nổi bật khi sắp mở ví (USDT thường bị ví hiển thị 2e-15 / $0) */}
-          {isPreConfirm && (
-            <div className="mt-4 w-full rounded-xl border-2 border-amber-400 bg-amber-50 px-4 py-3 text-left">
-              <p className="text-sm font-semibold text-amber-900">
-                Ví có thể hiển thị: &quot;2e-15 {tokenLabel}&quot; hoặc &quot;≈$0&quot;
-              </p>
-              <p className="mt-1 text-xs text-amber-800">
-                Đây là <strong>lỗi hiển thị</strong> của ví. Bỏ qua số đó và xác nhận giao dịch.
-              </p>
-              <p className="mt-2 text-sm font-bold text-amber-900">
-                Số tiền thực tế bạn đang chuyển: {amountDisplay} {tokenLabel}
-              </p>
-            </div>
-          )}
 
           <div className="mt-3 rounded-xl bg-slate-50 px-4 py-2">
             <p className="text-sm font-medium text-slate-700">
@@ -133,7 +119,7 @@ export function TransactionModal({
               href={explorerTxUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 text-xs font-medium text-[var(--color-primary)] underline"
+              className="mt-3 text-xs font-medium text-[var(--color-primary)]"
             >
               Xem trên Explorer
             </a>

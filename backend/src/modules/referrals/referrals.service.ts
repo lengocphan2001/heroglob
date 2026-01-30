@@ -16,7 +16,7 @@ export class ReferralsService {
     private readonly codeRepo: Repository<ReferralCode>,
     @InjectRepository(Referral)
     private readonly referralRepo: Repository<Referral>,
-  ) {}
+  ) { }
 
   private async ensureCode(code: string): Promise<string> {
     const exists = await this.codeRepo.findOne({ where: { code } });
@@ -65,5 +65,12 @@ export class ReferralsService {
       where: { walletAddress: walletAddress.trim().toLowerCase() },
     });
     return row?.code ?? null;
+  }
+
+  async getReferrer(walletAddress: string): Promise<string | null> {
+    const referral = await this.referralRepo.findOne({
+      where: { referredWallet: walletAddress.trim().toLowerCase() },
+    });
+    return referral?.referrerWallet ?? null;
   }
 }

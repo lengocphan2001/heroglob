@@ -31,7 +31,7 @@ export default function ExplorePage() {
   const { isConnected, address, chainId } = useWallet();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [categories, setCategories] = useState<{ id: string; label: string }[]>([{ id: 'all', label: 'All' }]);
+  const [categories, setCategories] = useState<{ id: string; label: string }[]>([{ id: 'all', label: 'Tất cả' }]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export default function ExplorePage() {
     getCategories()
       .then((list) =>
         setCategories([
-          { id: 'all', label: 'All' },
+          { id: 'all', label: 'Tất cả' },
           ...list.map((c) => ({ id: c.slug, label: c.name })),
         ]),
       )
@@ -76,10 +76,10 @@ export default function ExplorePage() {
     !search.trim()
       ? products
       : products.filter(
-          (p) =>
-            p.title.toLowerCase().includes(search.toLowerCase()) ||
-            p.creatorHandle.toLowerCase().includes(search.toLowerCase()),
-        );
+        (p) =>
+          p.title.toLowerCase().includes(search.toLowerCase()) ||
+          p.creatorHandle.toLowerCase().includes(search.toLowerCase()),
+      );
 
   const handleBuyUsdt = useCallback(
     async (product: Product) => {
@@ -218,7 +218,10 @@ export default function ExplorePage() {
         }
         error={txModal.error}
         onConfirmTransfer={txModal.onConfirmTransfer}
-        onClose={() => setTxModal((m) => ({ ...m, open: false, onConfirmTransfer: undefined }))}
+        onClose={() => {
+          setTxModal((m) => ({ ...m, open: false, onConfirmTransfer: undefined }));
+          setBuying(null);
+        }}
       />
       <div className="px-4 py-4">
         <div className="flex gap-3">
@@ -229,7 +232,7 @@ export default function ExplorePage() {
             />
             <input
               type="search"
-              placeholder="Search collections..."
+              placeholder="Tìm kiếm bộ sưu tập..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="h-12 w-full rounded-xl border-none bg-[var(--color-surface-light)] pl-11 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none"
@@ -256,13 +259,13 @@ export default function ExplorePage() {
 
       <div className="flex items-center justify-between px-4 pt-6 pb-4">
         <h3 className="text-lg font-bold tracking-tight text-slate-900">
-          Featured Drops
+          Sản phẩm nổi bật
         </h3>
         <Link
           href="/explore/featured"
           className="flex items-center gap-1 text-sm font-bold text-[var(--color-primary)] hover:underline"
         >
-          View All
+          Xem tất cả
           <ArrowRight className="size-4" />
         </Link>
       </div>

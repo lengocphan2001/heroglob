@@ -1,7 +1,7 @@
 import { api } from '../api';
 
 export type CreateOrderPayload = {
-  productId: number;
+  productId?: number;
   walletAddress: string;
   tokenType: 'usdt' | 'hero';
   amount: string;

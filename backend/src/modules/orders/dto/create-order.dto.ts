@@ -1,8 +1,9 @@
 import { IsIn, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class CreateOrderDto {
+  @IsOptional()
   @IsNumber()
-  productId!: number;
+  productId?: number;
 
   @IsString()
   @MaxLength(42)

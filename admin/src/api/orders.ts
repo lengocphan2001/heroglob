@@ -13,5 +13,12 @@ export type Order = {
 };
 
 export function getOrders(): Promise<Order[]> {
-  return api<Order[]>('orders');
+  return api<Order[]>('orders/admin/all'); // Updated to admin route
+}
+
+export function updateOrderStatus(id: number, status: string): Promise<Order> {
+  return api<Order>('orders/admin/status', {
+    method: 'POST',
+    body: JSON.stringify({ id, status }),
+  });
 }

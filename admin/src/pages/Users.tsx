@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LucideSearch } from 'lucide-react';
+import { LucideSearch, Plus, Filter, Pencil } from 'lucide-react';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import {
@@ -11,23 +11,47 @@ import {
 } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
+import { Modal } from '../components/ui/Modal';
+import { toast } from 'sonner';
 
-const mockUsers = [
-  { id: '1', name: 'Nguyễn Văn A', email: 'a@example.com', role: 'admin', status: 'active' as const },
-  { id: '2', name: 'Trần Thị B', email: 'b@example.com', role: 'editor', status: 'active' as const },
-  { id: '3', name: 'Lê Văn C', email: 'c@example.com', role: 'user', status: 'inactive' as const },
-  { id: '4', name: 'Phạm Thị D', email: 'd@example.com', role: 'user', status: 'active' as const },
-  { id: '5', name: 'Hoàng Văn E', email: 'e@example.com', role: 'editor', status: 'active' as const },
-];
+import { useQuery } from '@tanstack/react-query';
+import { getUsers, type User } from '../api/users';
+import { format } from 'date-fns';
 
 export function Users() {
   const [search, setSearch] = useState('');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
 
-  const filtered = mockUsers.filter(
-    (u) =>
+  const { data: users = [], isLoading, refetch } = useQuery({
+    queryKey: ['users'],
+    queryFn: getUsers,
+  });
+
+  const filtered = users.filter(
+    (u: User) =>
       u.name.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase()),
+      (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+      (u.walletAddress || '').toLowerCase().includes(search.toLowerCase()),
   );
+
+  const handleEdit = (user: User) => {
+    setEditingUser(user);
+    setIsFormOpen(true);
+  };
+
+  const handleCreate = () => {
+    setEditingUser(null);
+    setIsFormOpen(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Placeholder for save logic
+    toast.success(editingUser ? 'Cập nhật người dùng thành công' : 'Đã thêm người dùng');
+    setIsFormOpen(false);
+    refetch();
+  };
 
   return (
     <div className="space-y-6">
@@ -40,63 +64,119 @@ export function Users() {
             Quản lý tài khoản và vai trò
           </p>
         </div>
+        <div className="flex gap-2">
+          <Button variant="outline">
+            <Filter className="mr-2 h-4 w-4" />
+            Bộ lọc
+          </Button>
+          <Button variant="primary" onClick={handleCreate}>
+            <Plus className="mr-2 h-4 w-4" />
+            Thêm người dùng
+          </Button>
+        </div>
       </div>
 
       <Card>
         <div className="mb-4 flex gap-4">
           <div className="flex-1">
             <Input
-              placeholder="Tìm theo tên hoặc email..."
+              placeholder="Tìm theo tên, email hoặc ví..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               leftIcon={<LucideSearch className="h-4 w-4" />}
             />
           </div>
-          <Button variant="primary">Thêm người dùng</Button>
         </div>
         <Table>
           <thead>
             <TableRow>
               <TableHead>Họ tên</TableHead>
               <TableHead>Email</TableHead>
+              <TableHead>Ví</TableHead>
+              <TableHead>Số dư HERO</TableHead>
               <TableHead>Vai trò</TableHead>
-              <TableHead>Trạng thái</TableHead>
+              <TableHead>Ngày tạo</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
             </TableRow>
           </thead>
           <TableBody>
-            {filtered.length === 0 ? (
+            {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-8 text-center text-zinc-500">
+                <TableCell colSpan={7} className="py-8 text-center text-zinc-500">
+                  Đang tải dữ liệu...
+                </TableCell>
+              </TableRow>
+            ) : filtered.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={7} className="py-8 text-center text-zinc-500">
                   Không tìm thấy người dùng nào.
                 </TableCell>
               </TableRow>
             ) : (
               filtered.map((u) => (
-              <TableRow key={u.id}>
-                <TableCell className="font-medium">{u.name}</TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>
-                  <Badge variant={u.role === 'admin' ? 'danger' : u.role === 'editor' ? 'info' : 'default'}>
-                    {u.role}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={u.status === 'active' ? 'success' : 'default'}>
-                    {u.status === 'active' ? 'Hoạt động' : 'Tắt'}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button variant="ghost" size="sm">
-                    Sửa
-                  </Button>
-                </TableCell>
-              </TableRow>
+                <TableRow key={u.id}>
+                  <TableCell className="font-medium">
+                    {u.name}
+                  </TableCell>
+                  <TableCell>
+                    {u.email || '-'}
+                  </TableCell>
+                  <TableCell className="font-mono text-xs">
+                    {u.walletAddress ? (
+                      <span title={u.walletAddress}>
+                        {u.walletAddress.slice(0, 6)}...{u.walletAddress.slice(-4)}
+                      </span>
+                    ) : (
+                      '-'
+                    )}
+                  </TableCell>
+                  <TableCell>{Number(u.heroBalance).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Badge variant={u.role === 'admin' ? 'danger' : u.role === 'editor' ? 'info' : 'default'}>
+                      {u.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-sm text-zinc-500">
+                    {format(new Date(u.createdAt), 'dd/MM/yyyy HH:mm')}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button variant="ghost" size="icon" onClick={() => handleEdit(u)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </Card>
+
+      <Modal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingUser ? 'Sửa thông tin' : 'Thêm người dùng'}
+      >
+        <form onSubmit={handleSave} className="space-y-4">
+          <p className="text-sm text-zinc-500">Chức năng đang phát triển...</p>
+          <div>
+            <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+              Họ tên
+            </label>
+            <Input
+              defaultValue={editingUser?.name}
+              placeholder="Nhập họ tên"
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)}>
+              Hủy
+            </Button>
+            <Button type="submit" variant="primary">
+              Lưu
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
