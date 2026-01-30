@@ -9,6 +9,16 @@ const nextConfig: NextConfig = {
         port: '4000',
         pathname: '/api/uploads/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'api.heroglobal.io.vn',
+        pathname: '/api/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
     ],
   },
   // Turbopack configuration for Next.js 16
