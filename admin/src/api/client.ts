@@ -12,7 +12,7 @@ export function setStoredToken(token: string | null) {
 }
 
 let onUnauthorized: (() => void) | null = null;
-export function setOnUnauthorized(handler: () => void) {
+export function setOnUnauthorized(handler: (() => void) | null) {
   onUnauthorized = handler;
 }
 
