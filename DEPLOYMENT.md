@@ -86,7 +86,7 @@ sudo systemctl enable nginx
 ### Clone Repository
 ```bash
 cd /var/www
-sudo git clone https://github.com/yourusername/heroglob.git
+sudo git clone https://github.com/lengocphan2001/heroglob.git
 sudo chown -R $USER:$USER heroglob
 cd heroglob
 ```
@@ -164,21 +164,32 @@ VITE_API_BASE_URL=https://api.heroglobal.io.vn/api
 
 ## 8. Build Applications
 
+**Important:** Build each application separately in its own directory.
+
 ### Build Backend
 ```bash
 cd /var/www/heroglob/backend
+npm install
 npm run build
 ```
 
 ### Build Frontend
 ```bash
 cd /var/www/heroglob
+npm install
 npm run build
 ```
 
-### Build Admin
+**If you get TypeScript errors about admin folder:**
+Make sure `tsconfig.json` excludes admin and backend:
+```json
+"exclude": ["node_modules", "admin", "backend"]
+```
+
+### Build Admin (Vite)
 ```bash
 cd /var/www/heroglob/admin
+npm install
 npm run build
 ```
 
