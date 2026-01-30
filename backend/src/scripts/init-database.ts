@@ -1,22 +1,62 @@
-import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../app.module';
+import 'reflect-metadata';
 import { DataSource } from 'typeorm';
+import { config } from 'dotenv';
+import { resolve } from 'path';
+
+// Load environment variables
+config({ path: resolve(__dirname, '../../.env') });
+
+// Import all entities
+import { User } from '../modules/users/entities/user.entity';
+import { Category } from '../modules/categories/entities/category.entity';
+import { Product } from '../modules/products/entities/product.entity';
+import { Order } from '../modules/orders/entities/order.entity';
+import { NFT } from '../modules/nfts/entities/nft.entity';
+import { NFTReward } from '../modules/nfts/entities/nft-reward.entity';
+import { Investment } from '../modules/investments/entities/investment.entity';
+import { Payout } from '../modules/investments/entities/payout.entity';
+import { ReferralCode } from '../modules/referrals/entities/referral-code.entity';
+import { Referral } from '../modules/referrals/entities/referral.entity';
+import { Commission } from '../modules/commissions/entities/commission.entity';
+import { SystemConfig } from '../modules/system-config/entities/system-config.entity';
+import { Withdrawal } from '../modules/withdrawals/entities/withdrawal.entity';
 
 async function bootstrap() {
-    const app = await NestFactory.createApplicationContext(AppModule);
-    const dataSource = app.get(DataSource);
-
     console.log('🚀 Starting database initialization...');
 
-    try {
-        // Check if database is connected
-        if (!dataSource.isInitialized) {
-            await dataSource.initialize();
-        }
+    // Create standalone DataSource
+    const dataSource = new DataSource({
+        type: 'mysql',
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '3306', 10),
+        username: process.env.DB_USER || 'root',
+        password: process.env.DB_PASSWORD || '',
+        database: process.env.DB_NAME || 'heroglob',
+        entities: [
+            User,
+            Category,
+            Product,
+            Order,
+            NFT,
+            NFTReward,
+            Investment,
+            Payout,
+            ReferralCode,
+            Referral,
+            Commission,
+            SystemConfig,
+            Withdrawal,
+        ],
+        synchronize: false, // We'll do this manually
+        logging: false,
+    });
 
+    try {
+        // Initialize connection
+        await dataSource.initialize();
         console.log('✅ Database connected');
 
-        // Synchronize schema (create tables)
+        // Drop and recreate schema
         console.log('📦 Creating tables...');
         await dataSource.synchronize(true); // true = drop existing tables
         console.log('✅ Tables created successfully');
@@ -77,7 +117,7 @@ async function bootstrap() {
         console.error('❌ Error initializing database:', error);
         process.exit(1);
     } finally {
-        await app.close();
+        await dataSource.destroy();
     }
 }
 
