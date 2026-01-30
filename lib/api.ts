@@ -1,3 +1,4 @@
+import Cookies from 'js-cookie';
 import { API_URL } from './constants';
 
 type RequestConfig = RequestInit & { params?: Record<string, string> };
@@ -14,12 +15,20 @@ function buildUrl(path: string, params?: Record<string, string>): string {
 export async function api<T>(path: string, config: RequestConfig = {}): Promise<T> {
   const { params, ...init } = config;
   const url = buildUrl(path, params);
+  const token = Cookies.get('token');
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(init.headers as Record<string, string>),
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const res = await fetch(url, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...init.headers,
-    },
+    headers,
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }));

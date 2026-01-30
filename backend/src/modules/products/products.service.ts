@@ -15,7 +15,7 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly repo: Repository<Product>,
-  ) {}
+  ) { }
 
   async findAll(category?: string): Promise<Product[]> {
     const qb = this.repo.createQueryBuilder('p').orderBy('p.created_at', 'DESC');
@@ -67,6 +67,7 @@ export class ProductsService {
       priceVariant: dto.priceVariant ?? 'dark',
       category: dto.category ?? 'all',
       live: dto.live ?? false,
+      stock: dto.stock ?? 0,
     });
     return this.repo.save(product);
   }
@@ -85,6 +86,7 @@ export class ProductsService {
       ...(dto.priceVariant !== undefined && { priceVariant: dto.priceVariant }),
       ...(dto.category !== undefined && { category: dto.category }),
       ...(dto.live !== undefined && { live: dto.live }),
+      ...(dto.stock !== undefined && { stock: dto.stock }),
     });
     return this.repo.save(product);
   }

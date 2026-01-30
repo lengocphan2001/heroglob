@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 
@@ -10,5 +10,17 @@ export class UsersController {
     @Get()
     async findAll() {
         return this.usersService.findAll();
+    }
+
+    @Get('balance')
+    async getBalance(@Req() req) {
+        const user = await this.usersService.findOne(req.user.id);
+        if (!user) {
+            return { heroBalance: 0, usdtBalance: 0 };
+        }
+        return {
+            heroBalance: Number(user.heroBalance),
+            usdtBalance: Number(user.usdtBalance),
+        };
     }
 }

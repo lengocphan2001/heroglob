@@ -4,10 +4,11 @@ type Props = InputHTMLAttributes<HTMLInputElement> & {
   label?: string;
   error?: string;
   leftIcon?: React.ReactNode;
+  helperText?: string;
 };
 
 export const Input = forwardRef<HTMLInputElement, Props>(
-  ({ className = '', label, error, leftIcon, id: idProp, ...props }, ref) => {
+  ({ className = '', label, error, leftIcon, helperText, id: idProp, ...props }, ref) => {
     const id = idProp ?? props.name ?? undefined;
     return (
       <div className="w-full">
@@ -41,6 +42,7 @@ export const Input = forwardRef<HTMLInputElement, Props>(
             {...props}
           />
         </div>
+        {helperText && <p className="mt-1 text-xs text-zinc-500">{helperText}</p>}
         {error && (
           <p id={id ? `${id}-error` : undefined} className="mt-1 text-sm text-red-600 dark:text-red-400">
             {error}

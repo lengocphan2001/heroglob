@@ -4,4 +4,8 @@ export type { BalanceCardProps } from './BalanceCard';
 export { TokenRow } from './TokenRow';
 export type { TokenRowProps } from './TokenRow';
 export { VaultCard } from './VaultCard';
+export { ActivePowerCard } from './ActivePowerCard';
+export { RankSection } from './RankSection';
+export { HistoryTab } from './HistoryTab';
+export { NFTsTab } from './NFTsTab';
 export { WalletTabs } from './WalletTabs';

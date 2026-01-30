@@ -26,10 +26,10 @@ export function BottomNav({ items = defaultItems }: Props) {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white pt-3 pb-[env(safe-area-inset-bottom,20px)]"
+      className="z-50 border-t border-slate-200 bg-white pt-3 pb-[env(safe-area-inset-bottom,20px)] w-full"
       aria-label="Main navigation"
     >
-      <div className="mx-auto flex max-w-lg items-center justify-around px-2">
+      <div className="mx-auto flex w-full items-center justify-around px-2">
         {items.map(({ href, label, icon: Icon }) => {
           const isActive =
             href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');

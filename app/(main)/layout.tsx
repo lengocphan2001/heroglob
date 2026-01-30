@@ -10,7 +10,7 @@ export default function MainLayout({
     <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--color-background)] text-slate-800">
       <RefCaptureWrapper />
       <HeaderSwitcher />
-      <main className="min-h-0 flex-1 overflow-y-auto pb-24">{children}</main>
+      <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       <BottomNav />
     </div>
   );

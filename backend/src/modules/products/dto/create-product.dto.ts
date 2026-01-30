@@ -1,4 +1,4 @@
-import { IsBoolean, IsOptional, IsString, IsIn, MaxLength } from 'class-validator';
+import { IsBoolean, IsOptional, IsString, IsIn, MaxLength, IsNumber } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -50,4 +50,8 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   live?: boolean;
+
+  @IsOptional()
+  @IsNumber()
+  stock?: number;
 }

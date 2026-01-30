@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { LayoutDashboard, Users, Package, FolderTree, ShoppingBag, Settings } from 'lucide-react';
+import { LayoutDashboard, Users, Package, FolderTree, ShoppingBag, Settings, Banknote } from 'lucide-react';
 
 export type NavItem = {
   label: string;
@@ -13,6 +13,7 @@ export const navItems: NavItem[] = [
   { label: 'Danh mục', path: '/categories', icon: FolderTree },
   { label: 'Sản phẩm (Explore)', path: '/products', icon: Package },
   { label: 'Đơn hàng', path: '/orders', icon: ShoppingBag },
+  { label: 'Lịch sử Payout', path: '/payouts', icon: Banknote },
   { label: 'Cài đặt', path: '/settings', icon: Settings },
 ];
 
@@ -25,6 +26,7 @@ export function getBreadcrumb(pathname: string): { label: string; path?: string 
     categories: 'Danh mục',
     products: 'Sản phẩm',
     orders: 'Đơn hàng',
+    payouts: 'Lịch sử Payout',
     settings: 'Cài đặt',
     new: 'Thêm mới',
     edit: 'Chỉnh sửa',

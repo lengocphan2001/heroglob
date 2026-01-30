@@ -23,14 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="light">
-      <body className={`${plusJakarta.variable} antialiased`}>
-        <WalletProvider>
-          <Suspense fallback={null}>
-            <ReferralTracker />
-          </Suspense>
-          {children}
-        </WalletProvider>
+    <html lang="en" className="light h-full">
+      <body className={`${plusJakarta.variable} antialiased h-full w-full flex justify-center bg-slate-100`}>
+        <div className="w-full max-w-[480px] h-full bg-[var(--color-background)] shadow-[0_0_50px_-12px_rgb(0,0,0,0.25)] overflow-hidden relative font-sans">
+          <WalletProvider>{children}</WalletProvider>
+        </div>
       </body>
     </html>
   );

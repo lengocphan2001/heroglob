@@ -39,6 +39,9 @@ export type Product = {
   priceVariant: string;
   category: string;
   live: boolean;
+  stock: number;
+  dailyHeroReward: string;
+  maxHeroReward: string;
   createdAt: string;
   updatedAt: string;
 };
@@ -55,6 +58,9 @@ export type CreateProductPayload = {
   priceVariant?: 'primary' | 'dark';
   category?: string;
   live?: boolean;
+  stock?: number;
+  dailyHeroReward?: string;
+  maxHeroReward?: string;
 };
 
 export type UpdateProductPayload = Partial<CreateProductPayload>;

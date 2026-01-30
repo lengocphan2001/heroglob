@@ -7,6 +7,7 @@ import { Settings } from './pages/Settings';
 import { Users } from './pages/Users';
 import { Products } from './pages/Products';
 import { ProductForm } from './pages/ProductForm';
+import { Payouts } from './pages/Payouts';
 import { Orders } from './pages/Orders';
 import { Categories } from './pages/Categories';
 
@@ -31,6 +32,7 @@ const router = createBrowserRouter([
       { path: 'products/new', element: <ProductForm /> },
       { path: 'products/:id/edit', element: <ProductForm /> },
       { path: 'orders', element: <Orders /> },
+      { path: 'payouts', element: <Payouts /> },
       { path: 'settings', element: <Settings /> },
       { path: '*', element: <Navigate to="/dashboard" replace /> },
     ],

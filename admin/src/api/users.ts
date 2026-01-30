@@ -7,6 +7,8 @@ export interface User {
     role: string;
     walletAddress: string | null;
     heroBalance: string;
+    usdtBalance: string;
+    rank: string;
     status: string; // fallback if not in DB, assume active
     createdAt: string;
 }

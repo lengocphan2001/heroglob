@@ -37,6 +37,9 @@ const defaultForm: CreateProductPayload = {
   priceVariant: 'dark',
   category: 'all',
   live: false,
+  stock: 0,
+  dailyHeroReward: '0',
+  maxHeroReward: '0',
 };
 
 export function Products() {
@@ -96,6 +99,9 @@ export function Products() {
       priceVariant: (p.priceVariant as 'primary' | 'dark') || 'dark',
       category: p.category || 'all',
       live: p.live,
+      stock: p.stock ?? 0,
+      dailyHeroReward: p.dailyHeroReward ?? '0',
+      maxHeroReward: p.maxHeroReward ?? '0',
     });
     setIsFormOpen(true);
   };
@@ -158,6 +164,7 @@ export function Products() {
       priceVariant: form.priceVariant || 'dark',
       priceUsdt: form.priceUsdt ?? '0',
       priceHero: form.priceHero ?? '0',
+      stock: form.stock ?? 0,
     };
     (editingId ? updateProduct(editingId, payload) : createProduct(payload))
       .then(() => {
@@ -464,17 +471,55 @@ export function Products() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="live"
-              checked={form.live ?? false}
-              onChange={(e) => setForm((f) => ({ ...f, live: e.target.checked }))}
-              className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 dark:border-zinc-600 dark:bg-zinc-800"
+          <div className="flex items-center gap-4">
+            <div className="flex-1">
+              <Input
+                label="Số lượng (Stock)"
+                name="stock"
+                type="number"
+                value={form.stock ?? 0}
+                onChange={(e) => setForm((f) => ({ ...f, stock: parseInt(e.target.value) || 0 }))}
+                placeholder="0"
+                helperText="Để 0 nếu không giới hạn"
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-6">
+              <input
+                type="checkbox"
+                id="live"
+                checked={form.live ?? false}
+                onChange={(e) => setForm((f) => ({ ...f, live: e.target.checked }))}
+                className="h-4 w-4 rounded border-zinc-300 text-indigo-600 focus:ring-indigo-500 dark:border-zinc-600 dark:bg-zinc-800"
+              />
+              <label htmlFor="live" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
+                Hiển thị badge Live
+              </label>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="Daily HERO Reward"
+              name="dailyHeroReward"
+              type="number"
+              step="0.000001"
+              value={form.dailyHeroReward ?? '0'}
+              onChange={(e) => setForm((f) => ({ ...f, dailyHeroReward: e.target.value }))}
+              placeholder="0"
+              helperText="HERO mỗi NFT nhận mỗi ngày"
             />
-            <label htmlFor="live" className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-              Hiển thị badge Live
-            </label>
+
+            <Input
+              label="Max HERO Reward"
+              name="maxHeroReward"
+              type="number"
+              step="0.000001"
+              value={form.maxHeroReward ?? '0'}
+              onChange={(e) => setForm((f) => ({ ...f, maxHeroReward: e.target.value }))}
+              placeholder="0"
+              helperText="Tổng HERO tối đa mỗi NFT"
+            />
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">

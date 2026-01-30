@@ -11,8 +11,13 @@ import { ProductsModule } from './modules/products/products.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { CategoriesModule } from './modules/categories/categories.module';
-import { CommissionsModule } from './modules/commissions/commissions.module';
 import { StatsModule } from './modules/stats/stats.module';
+import { SystemConfigModule } from './modules/system-config/system-config.module';
+import { InvestmentsModule } from './modules/investments/investments.module';
+import { RanksModule } from './modules/ranks/ranks.module';
+import { TransactionsModule } from './modules/transactions/transactions.module';
+import { NFTsModule } from './modules/nfts/nfts.module';
+import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
 
 @Module({
   imports: [
@@ -37,9 +42,14 @@ import { StatsModule } from './modules/stats/stats.module';
     ProductsModule,
     OrdersModule,
     ReferralsModule,
-    ReferralsModule,
     CategoriesModule,
     StatsModule,
+    SystemConfigModule,
+    InvestmentsModule,
+    RanksModule,
+    TransactionsModule,
+    NFTsModule,
+    WithdrawalsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -41,4 +41,10 @@ export class OrdersController {
     }
     return this.ordersService.updateStatus(body.id, body.status);
   }
+
+  @Get('my-products')
+  @UseGuards(AuthGuard('jwt'))
+  async getMyProducts(@Req() req: any) {
+    return this.ordersService.getUserProducts(req.user.walletAddress);
+  }
 }

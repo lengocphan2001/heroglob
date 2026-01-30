@@ -1,22 +1,63 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   BalanceCard,
-  ActionGrid,
   WalletTabs,
   TokenRow,
-  VaultCard,
+  RankSection,
+  HistoryTab,
+  NFTsTab,
 } from '@/components/sections/wallet';
+import { WithdrawModal } from '@/components/modals/WithdrawModal';
 import { useWallet } from '@/contexts/WalletContext';
-import { useWalletBalances } from '@/hooks/useWalletBalances';
+import { getUserBalance, type UserBalance } from '@/lib/api/balance';
 
 type TabId = 'tokens' | 'nfts' | 'history';
 
 export default function WalletPage() {
   const [activeTab, setActiveTab] = useState<TabId>('tokens');
   const { isConnected } = useWallet();
-  const { tokens, totalBnb, totalCrypto, loading, error, refetch } = useWalletBalances();
+  const [balance, setBalance] = useState<UserBalance | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
+  const [withdrawToken, setWithdrawToken] = useState<'usdt' | 'hero'>('usdt');
+
+  useEffect(() => {
+    if (!isConnected) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    getUserBalance()
+      .then(setBalance)
+      .catch((err) => {
+        console.error('Failed to fetch balance:', err);
+        setError('Không thể tải số dư');
+      })
+      .finally(() => setLoading(false));
+  }, [isConnected]);
+
+  const refetch = () => {
+    if (!isConnected) return;
+    setLoading(true);
+    setError(null);
+    getUserBalance()
+      .then(setBalance)
+      .catch((err) => {
+        console.error('Failed to fetch balance:', err);
+        setError('Không thể tải số dư');
+      })
+      .finally(() => setLoading(false));
+  };
+
+  const handleWithdraw = (tokenType: 'usdt' | 'hero') => {
+    setWithdrawToken(tokenType);
+    setWithdrawModalOpen(true);
+  };
 
   return (
     <div className="relative mx-auto flex max-w-md flex-col bg-white">
@@ -42,18 +83,14 @@ export default function WalletPage() {
           </div>
         ) : (
           <BalanceCard
-            totalUsd={totalBnb}
-            totalCrypto={totalCrypto}
+            totalUsd={`$${(balance?.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            totalCrypto={`${(balance?.heroBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} HERO`}
             changePercent="—"
           />
         )}
       </div>
 
-      <div className="px-6 pb-8">
-        <ActionGrid />
-      </div>
-
-      <div className="mt-2 flex-1 rounded-t-[40px] border-t border-slate-100 ">
+      <div className="mt-2 flex-1 rounded-t-[40px] border-t border-slate-100">
         <div className="pt-6">
           <WalletTabs activeId={activeTab} onSelect={setActiveTab} />
         </div>
@@ -66,42 +103,44 @@ export default function WalletPage() {
               <p className="py-4 text-center text-sm text-slate-500">Đang tải...</p>
             ) : error ? (
               <p className="py-4 text-center text-sm text-slate-500">{error}</p>
-            ) : tokens.length === 0 ? (
-              <p className="py-4 text-center text-sm text-slate-500">Chưa có token.</p>
             ) : (
-              tokens.map((token) => (
+              <>
                 <TokenRow
-                  key={token.id}
-                  href={`/wallet/token/${token.id}`}
-                  iconUrl={token.iconUrl ?? '/file.svg'}
-                  name={token.name}
-                  symbol={token.symbol}
-                  networkLabel={token.networkLabel}
-                  amount={token.amount}
-                  change={token.change}
-                  changeType={token.changeType}
+                  iconUrl="/usdt-icon.svg"
+                  name="Tether USD"
+                  symbol="USDT"
+                  networkLabel="BEP-20"
+                  amount={`${(balance?.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  onWithdraw={() => handleWithdraw('usdt')}
                 />
-              ))
+                <TokenRow
+                  iconUrl="/hero-icon.svg"
+                  name="Hero Token"
+                  symbol="HERO"
+                  networkLabel="BEP-20"
+                  amount={`${(balance?.heroBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                />
+              </>
             )}
           </div>
         )}
 
-        {activeTab === 'nfts' && (
-          <div className="px-6 pt-4">
-            <p className="text-center text-sm text-slate-500">Chưa có NFT nào.</p>
-          </div>
-        )}
+        {activeTab === 'nfts' && <NFTsTab />}
 
-        {activeTab === 'history' && (
-          <div className="px-6 pt-4">
-            <p className="text-center text-sm text-slate-500">Chưa có giao dịch.</p>
-          </div>
-        )}
+        {activeTab === 'history' && <HistoryTab />}
 
-        <div className="mt-6 px-6">
-          <VaultCard />
+        <div className="mt-6 px-6 pb-6">
+          <RankSection />
         </div>
       </div>
+
+      <WithdrawModal
+        isOpen={withdrawModalOpen}
+        onClose={() => setWithdrawModalOpen(false)}
+        tokenType={withdrawToken}
+        balance={withdrawToken === 'usdt' ? (balance?.usdtBalance || 0) : (balance?.heroBalance || 0)}
+        onSuccess={refetch}
+      />
     </div>
   );
 }

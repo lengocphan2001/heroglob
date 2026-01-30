@@ -47,6 +47,15 @@ export class Product {
   @Column({ type: 'boolean', default: false })
   live!: boolean;
 
+  @Column({ type: 'int', default: 0 })
+  stock!: number;
+
+  @Column({ type: 'decimal', precision: 18, scale: 6, default: 0, name: 'daily_hero_reward' })
+  dailyHeroReward!: string;
+
+  @Column({ type: 'decimal', precision: 18, scale: 6, default: 0, name: 'max_hero_reward' })
+  maxHeroReward!: string;
+
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 

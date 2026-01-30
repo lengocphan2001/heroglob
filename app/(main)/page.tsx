@@ -65,11 +65,28 @@ function PowerActivation() {
     return () => clearInterval(i);
   }, [isConnected, address, chainId]);
 
+  const [config, setConfig] = useState<{ min: number; profit: string }>({ min: 10, profit: '1' });
+
+  useEffect(() => {
+    // Fetch dynamic config
+    fetch(process.env.NEXT_PUBLIC_API_URL + '/system-config')
+      .then(res => res.json())
+      .then((data: Array<{ key: string; value: string }>) => {
+        const minConfig = data.find(c => c.key === 'INVESTMENT_MIN_USDT');
+        const profitConfig = data.find(c => c.key === 'INVESTMENT_PROFIT_PERCENT');
+        setConfig({
+          min: minConfig ? parseFloat(minConfig.value) : 10,
+          profit: profitConfig ? profitConfig.value : '1'
+        });
+      })
+      .catch(console.error);
+  }, []);
+
   const handleActivate = async () => {
     if (!isConnected) return alert("Vui lòng kết nối ví!");
     if (!amount) return;
     const val = parseFloat(amount);
-    if (isNaN(val) || val < 100) return alert("Tối thiểu 100 USDT");
+    if (isNaN(val) || val < config.min) return alert(`Tối thiểu ${config.min} USDT`);
 
     const ethereum = (window as any).ethereum;
     const usdtAddress = getUsdtAddress(chainId);
@@ -142,8 +159,8 @@ function PowerActivation() {
           </h3>
         </div>
 
-        <p className="mb-3 text-xs text-slate-500">
-          Tối thiểu 100 USDT. Lợi nhuận hàng ngày 1% - 1.5%
+        <p className="mb-3 text-xs text-slate-500 text-center">
+          Tối thiểu {config.min} USDT. Lợi nhuận hàng ngày {config.profit}%
         </p>
 
         <div className="relative mb-2">

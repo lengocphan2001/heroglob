@@ -21,6 +21,9 @@ export class User {
   @Column({ type: 'decimal', precision: 20, scale: 2, default: 0 })
   heroBalance!: number;
 
+  @Column({ type: 'decimal', precision: 20, scale: 2, default: 0, name: 'usdt_balance' })
+  usdtBalance!: number;
+
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
@@ -29,6 +32,15 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, name: 'password_hash', nullable: true })
   passwordHash!: string | null;
+
+  @Column({ type: 'varchar', length: 20, unique: true, nullable: true, name: 'referral_code' })
+  referralCode!: string | null;
+
+  @Column({ type: 'int', nullable: true, name: 'referred_by_id' })
+  referredById!: number | null;
+
+  @Column({ type: 'varchar', length: 20, default: 'member' })
+  rank!: string;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;

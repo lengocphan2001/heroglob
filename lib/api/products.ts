@@ -1,4 +1,4 @@
-import { api } from '../api';
+import { api } from '@/lib/api';
 
 export type Product = {
   id: number;
@@ -6,25 +6,37 @@ export type Product = {
   title: string;
   description: string | null;
   imageUrl: string;
-  creatorAvatarUrl: string | null;
   creatorHandle: string;
-  price: string | null;
-  priceUsdt: string;
-  priceHero: string;
-  priceVariant: string;
-  category: string;
-  live: boolean;
+  creatorAvatarUrl: string | null;
+  price: string;
+  tokenType: string;
+  categoryId: number | null;
+  isFeatured: boolean;
   createdAt: string;
   updatedAt: string;
 };
 
-export async function getProducts(category?: string): Promise<Product[]> {
-  return api<Product[]>('products', {
-    params: category && category !== 'all' ? { category } : {},
-  });
+export type UserProduct = {
+  productId: number;
+  hashId: string | null;
+  title: string;
+  description: string | null;
+  imageUrl: string;
+  creatorHandle: string;
+  creatorAvatarUrl: string | null;
+  quantity: number;
+  totalSpent: number;
+  lastPurchased: string;
+};
+
+export async function getProducts(): Promise<Product[]> {
+  return api<Product[]>('products');
 }
 
-/** @param identifier - numeric id or hashId (public URLs) */
-export async function getProduct(identifier: string | number): Promise<Product> {
-  return api<Product>(`products/${identifier}`);
+export async function getProduct(id: string): Promise<Product> {
+  return api<Product>(`products/${id}`);
+}
+
+export async function getMyProducts(): Promise<UserProduct[]> {
+  return api<UserProduct[]>('nfts/my-nfts');
 }

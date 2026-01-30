@@ -38,8 +38,25 @@ export class UsersService {
     return this.userRepo.findOne({ where: { walletAddress: normalized } });
   }
 
-  async createWithWallet(walletAddress: string): Promise<User> {
+  async findByWallet(walletAddress: string): Promise<User | null> {
+    return this.findByWalletAddress(walletAddress);
+  }
+
+  private generateReferralCode(): string {
+    return Math.random().toString(36).substring(2, 8).toUpperCase();
+  }
+
+  async createWithWallet(walletAddress: string, referrerCode?: string): Promise<User> {
     const normalized = walletAddress.trim().toLowerCase();
+
+    let referredById: number | null = null;
+    if (referrerCode) {
+      const referrer = await this.userRepo.findOne({ where: { referralCode: referrerCode } });
+      if (referrer) {
+        referredById = referrer.id;
+      }
+    }
+
     const user = this.userRepo.create({
       walletAddress: normalized,
       name: `User ${normalized.slice(0, 6)}`,
@@ -47,8 +64,15 @@ export class UsersService {
       heroBalance: 0,
       email: null,
       passwordHash: null,
+      referralCode: this.generateReferralCode(),
+      referredById,
+      rank: 'member',
     });
     return this.userRepo.save(user);
+  }
+
+  async countReferrals(userId: number): Promise<number> {
+    return this.userRepo.count({ where: { referredById: userId } });
   }
 
   async onModuleInit() {
@@ -93,5 +117,21 @@ export class UsersService {
     return this.userRepo.find({
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async findOne(id: number): Promise<User | null> {
+    return this.userRepo.findOne({ where: { id } });
+  }
+
+  async updateBalance(id: number, change: number): Promise<void> {
+    // Basic implementation; for production consider transactions or query builder increment
+    const user = await this.findOne(id);
+    if (!user) return;
+    // ensure floating point math is handled reasonably well, or rely on JS number (double precision)
+    // heroBalance is string in entity? No, it's number (decimal).
+    // TypeORM returns decimal columns as strings usually, but entity defined as number.
+    // Let's assume number.
+    user.heroBalance = Number(user.heroBalance) + change;
+    await this.userRepo.save(user);
   }
 }

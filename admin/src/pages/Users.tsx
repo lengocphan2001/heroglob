@@ -93,7 +93,9 @@ export function Users() {
               <TableHead>Họ tên</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Ví</TableHead>
-              <TableHead>Số dư HERO</TableHead>
+              <TableHead>USDT</TableHead>
+              <TableHead>HERO</TableHead>
+              <TableHead>Rank</TableHead>
               <TableHead>Vai trò</TableHead>
               <TableHead>Ngày tạo</TableHead>
               <TableHead className="text-right">Thao tác</TableHead>
@@ -102,13 +104,13 @@ export function Users() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-zinc-500">
+                <TableCell colSpan={9} className="py-8 text-center text-zinc-500">
                   Đang tải dữ liệu...
                 </TableCell>
               </TableRow>
             ) : filtered.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="py-8 text-center text-zinc-500">
+                <TableCell colSpan={9} className="py-8 text-center text-zinc-500">
                   Không tìm thấy người dùng nào.
                 </TableCell>
               </TableRow>
@@ -130,7 +132,19 @@ export function Users() {
                       '-'
                     )}
                   </TableCell>
+                  <TableCell>{Number(u.usdtBalance).toLocaleString()}</TableCell>
                   <TableCell>{Number(u.heroBalance).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Badge variant={
+                      u.rank === 'max' ? 'warning' :
+                        u.rank === 'legendary' ? 'warning' :
+                          u.rank === 'epic' ? 'info' :
+                            u.rank === 'rare' ? 'success' :
+                              'default'
+                    }>
+                      {u.rank}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <Badge variant={u.role === 'admin' ? 'danger' : u.role === 'editor' ? 'info' : 'default'}>
                       {u.role}
