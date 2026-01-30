@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Compass, Wallet, User } from 'lucide-react';
+import { Home, Compass, Wallet, User, type LucideProps } from 'lucide-react';
 
 export type NavItem = {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: React.ComponentType<LucideProps>;
 };
 
 const defaultItems: NavItem[] = [
