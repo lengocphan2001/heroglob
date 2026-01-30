@@ -120,7 +120,7 @@ nano .env
 Add the following:
 ```env
 NODE_ENV=production
-PORT=4000
+PORT=4001
 
 # Database
 DB_HOST=localhost
@@ -215,26 +215,26 @@ module.exports = {
       exec_mode: 'cluster',
       env: {
         NODE_ENV: 'production',
-        PORT: 4000,
+        PORT: 4001,
       },
     },
     {
       name: 'heroglob-frontend',
       cwd: '/var/www/heroglob',
       script: 'node_modules/next/dist/bin/next',
-      args: 'start -p 3000',
+      args: 'start -p 3001',
       instances: 1,
       exec_mode: 'cluster',
       env: {
         NODE_ENV: 'production',
-        PORT: 3000,
+        PORT: 3001,
       },
     },
     {
       name: 'heroglob-admin',
       cwd: '/var/www/heroglob/admin',
       script: 'node_modules/vite/bin/vite.js',
-      args: 'preview --port 5173 --host',
+      args: 'preview --port 5174 --host',
       instances: 1,
       env: {
         NODE_ENV: 'production',
@@ -269,7 +269,7 @@ server {
     server_name api.heroglobal.io.vn;
 
     location / {
-        proxy_pass http://localhost:4000;
+        proxy_pass http://localhost:4001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -287,7 +287,7 @@ server {
     server_name heroglobal.io.vn www.heroglobal.io.vn;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://localhost:3001;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -305,7 +305,7 @@ server {
     server_name admin.heroglobal.io.vn;
 
     location / {
-        proxy_pass http://localhost:5173;
+        proxy_pass http://localhost:5174;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
@@ -503,9 +503,9 @@ pm2 logs heroglob-frontend
 
 ### Check if ports are in use:
 ```bash
-sudo netstat -tulpn | grep :3000
-sudo netstat -tulpn | grep :4000
-sudo netstat -tulpn | grep :5173
+sudo netstat -tulpn | grep :3001
+sudo netstat -tulpn | grep :4001
+sudo netstat -tulpn | grep :5174
 ```
 
 ### Restart all services:
