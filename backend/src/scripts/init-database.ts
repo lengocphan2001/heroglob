@@ -99,9 +99,9 @@ async function bootstrap() {
         // Create default system config
         const configRepository = dataSource.getRepository(SystemConfig);
         const configs = [
-            { configKey: 'maintenance_mode', configValue: 'false', description: 'Enable/disable maintenance mode' },
-            { configKey: 'referral_commission_rate', configValue: '0.1', description: 'Referral commission rate (10%)' },
-            { configKey: 'min_withdrawal_amount', configValue: '10', description: 'Minimum withdrawal amount' },
+            { key: 'maintenance_mode', value: 'false' },
+            { key: 'referral_commission_rate', value: '0.1' },
+            { key: 'min_withdrawal_amount', value: '10' },
         ];
 
         for (const cfg of configs) {
