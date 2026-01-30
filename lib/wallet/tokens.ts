@@ -50,15 +50,15 @@ export function getUsdtAddress(chainId: string | null): string | null {
 }
 
 export function getUsdtDecimals(chainId: string | null): number {
-  return (chainId && USDT_DECIMALS_BY_CHAIN[chainId]) ?? 18;
+  return (chainId ? USDT_DECIMALS_BY_CHAIN[chainId] : undefined) ?? 18;
 }
 
 export function getNativeSymbol(chainId: string | null): string {
-  return (chainId && NATIVE_SYMBOL_BY_CHAIN[chainId]) || 'ETH';
+  return (chainId ? NATIVE_SYMBOL_BY_CHAIN[chainId] : undefined) || 'ETH';
 }
 
 export function getNetworkLabel(chainId: string | null): string {
-  return (chainId && NETWORK_LABEL_BY_CHAIN[chainId]) || 'ERC20';
+  return (chainId ? NETWORK_LABEL_BY_CHAIN[chainId] : undefined) || 'ERC20';
 }
 
 /** BSC (BEP20) – mạng mặc định để hiển thị số dư */
