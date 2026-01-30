@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { resolve } from 'path';
+import * as bcrypt from 'bcrypt';
 
 // Load environment variables
 config({ path: resolve(__dirname, '../../.env') });
@@ -47,7 +48,7 @@ async function bootstrap() {
             SystemConfig,
             Withdrawal,
         ],
-        synchronize: false, // We'll do this manually
+        synchronize: false,
         logging: false,
     });
 
@@ -61,50 +62,52 @@ async function bootstrap() {
         await dataSource.synchronize(true); // true = drop existing tables
         console.log('✅ Tables created successfully');
 
-        // Seed default data
+        // Seed default data using repositories
         console.log('🌱 Seeding default data...');
 
-        // Insert default admin user
-        await dataSource.query(`
-      INSERT INTO users (email, name, \`role\`, password_hash, hero_balance, usdt_balance, \`rank\`)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `, [
-            'admin@heroglobal.io.vn',
-            'Admin',
-            'admin',
-            '$2b$10$rZ5YqJ5YqJ5YqJ5YqJ5YqOZQZ5YqJ5YqJ5YqJ5YqJ5YqJ5YqJ5Yq', // password: admin123
-            0,
-            0,
-            'admin'
-        ]);
+        // Create admin user using repository
+        const userRepository = dataSource.getRepository(User);
+        const adminUser = userRepository.create({
+            email: 'admin@heroglobal.io.vn',
+            name: 'Admin',
+            role: 'admin',
+            passwordHash: await bcrypt.hash('admin123', 10),
+            heroBalance: 0,
+            usdtBalance: 0,
+            rank: 'admin',
+            walletAddress: null,
+            referralCode: null,
+            referredById: null,
+        });
+        await userRepository.save(adminUser);
         console.log('  ✓ Created admin user');
 
-        // Insert default categories
-        await dataSource.query(`
-      INSERT INTO categories (name, slug, description)
-      VALUES 
-        (?, ?, ?),
-        (?, ?, ?),
-        (?, ?, ?)
-    `, [
-            'NFT Collection', 'nft-collection', 'Digital collectibles and NFTs',
-            'Investment', 'investment', 'Investment products',
-            'Staking', 'staking', 'Staking opportunities'
-        ]);
+        // Create default categories
+        const categoryRepository = dataSource.getRepository(Category);
+        const categories = [
+            { name: 'NFT Collection', slug: 'nft-collection', description: 'Digital collectibles and NFTs' },
+            { name: 'Investment', slug: 'investment', description: 'Investment products' },
+            { name: 'Staking', slug: 'staking', description: 'Staking opportunities' },
+        ];
+
+        for (const cat of categories) {
+            const category = categoryRepository.create(cat);
+            await categoryRepository.save(category);
+        }
         console.log('  ✓ Created default categories');
 
-        // Insert default system config
-        await dataSource.query(`
-      INSERT INTO system_config (config_key, config_value, description)
-      VALUES 
-        (?, ?, ?),
-        (?, ?, ?),
-        (?, ?, ?)
-    `, [
-            'maintenance_mode', 'false', 'Enable/disable maintenance mode',
-            'referral_commission_rate', '0.1', 'Referral commission rate (10%)',
-            'min_withdrawal_amount', '10', 'Minimum withdrawal amount'
-        ]);
+        // Create default system config
+        const configRepository = dataSource.getRepository(SystemConfig);
+        const configs = [
+            { configKey: 'maintenance_mode', configValue: 'false', description: 'Enable/disable maintenance mode' },
+            { configKey: 'referral_commission_rate', configValue: '0.1', description: 'Referral commission rate (10%)' },
+            { configKey: 'min_withdrawal_amount', configValue: '10', description: 'Minimum withdrawal amount' },
+        ];
+
+        for (const cfg of configs) {
+            const config = configRepository.create(cfg);
+            await configRepository.save(config);
+        }
         console.log('  ✓ Created system config');
 
         console.log('\n🎉 Database initialization completed successfully!');
