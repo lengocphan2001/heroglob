@@ -9,9 +9,15 @@ export type Product = {
   creatorHandle: string;
   creatorAvatarUrl: string | null;
   price: string;
+  priceUsdt: string;
+  priceHero: string;
+  priceVariant: string;
   tokenType: string;
+  category: string;
   categoryId: number | null;
   isFeatured: boolean;
+  live: boolean;
+  stock: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -29,8 +35,9 @@ export type UserProduct = {
   lastPurchased: string;
 };
 
-export async function getProducts(): Promise<Product[]> {
-  return api<Product[]>('products');
+export async function getProducts(category?: string): Promise<Product[]> {
+  const params = category ? { category } : undefined;
+  return api<Product[]>('products', { params });
 }
 
 export async function getProduct(id: string): Promise<Product> {
