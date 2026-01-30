@@ -11,6 +11,7 @@ import {
 } from 'react';
 import { BSC_CHAIN_ID, BSC_PARAMS } from '@/lib/wallet/tokens';
 import { loginWallet } from '@/lib/auth';
+import { getStoredRefCode } from '@/lib/api/referrals';
 import Cookies from 'js-cookie';
 
 declare global {
@@ -99,7 +100,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
       // Auto login/register backend
       try {
-        const refCode = localStorage.getItem('referral_code');
+        const refCode = getStoredRefCode();
         const { access_token } = await loginWallet(address, refCode);
         Cookies.set('token', access_token, { expires: 7 });
       } catch (err) {

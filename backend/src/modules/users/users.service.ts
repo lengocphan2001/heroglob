@@ -71,6 +71,36 @@ export class UsersService {
     return this.userRepo.save(user);
   }
 
+  async createWithEmail(data: { email: string; password: string; name: string; referrerCode?: string }): Promise<User> {
+    const normalizedEmail = data.email.trim().toLowerCase();
+    const existing = await this.userRepo.findOne({ where: { email: normalizedEmail } });
+    if (existing) throw new Error('Email đã tồn tại');
+
+    let referredById: number | null = null;
+    if (data.referrerCode) {
+      const referrer = await this.userRepo.findOne({ where: { referralCode: data.referrerCode } });
+      if (referrer) {
+        referredById = referrer.id;
+      }
+    }
+
+    const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS);
+
+    const user = this.userRepo.create({
+      email: normalizedEmail,
+      walletAddress: null,
+      name: data.name,
+      role: 'user',
+      heroBalance: 0,
+      usdtBalance: 0,
+      passwordHash,
+      referralCode: this.generateReferralCode(),
+      referredById,
+      rank: 'member',
+    });
+    return this.userRepo.save(user);
+  }
+
   async countReferrals(userId: number): Promise<number> {
     return this.userRepo.count({ where: { referredById: userId } });
   }

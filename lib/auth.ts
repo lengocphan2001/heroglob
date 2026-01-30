@@ -16,3 +16,17 @@ export async function loginWallet(address: string, refCode?: string | null) {
         body: JSON.stringify({ address, refCode }),
     });
 }
+
+export async function register(data: { email: string; password: string; name: string; refCode?: string }) {
+    return api<LoginResponse>('auth/register', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function login(data: { email: string; password: string }) {
+    return api<LoginResponse>('auth/login', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}

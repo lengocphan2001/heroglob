@@ -21,7 +21,7 @@ export function RefCapture() {
     if (!refCode) return;
     registerReferral(address, refCode)
       .then(() => setStoredRefCode(null))
-      .catch(() => {});
+      .catch((e) => console.error("Referral registration failed:", e));
   }, [address]);
 
   return null;

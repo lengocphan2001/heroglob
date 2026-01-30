@@ -59,6 +59,26 @@ export class AuthService {
     };
   }
 
+  async register(data: { email: string; password: string; name: string; refCode?: string }) {
+    const user = await this.usersService.createWithEmail({
+      email: data.email,
+      password: data.password,
+      name: data.name,
+      referrerCode: data.refCode,
+    });
+    const payload: JwtPayload = { sub: String(user.id), email: user.email ?? '' };
+    const access_token = this.jwtService.sign(payload);
+    return {
+      access_token,
+      user: {
+        id: String(user.id),
+        email: user.email,
+        name: user.name,
+        role: user.role,
+      },
+    };
+  }
+
   async getProfile(userId: string) {
     const user = await this.usersService.findById(userId);
     if (!user) throw new UnauthorizedException('Người dùng không tồn tại');
