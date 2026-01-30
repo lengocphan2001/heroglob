@@ -162,6 +162,58 @@ VITE_API_BASE_URL=https://api.heroglobal.io.vn/api
 
 ---
 
+## 7.5. Initialize Database
+
+After creating the database and user, you need to create all the tables and seed initial data.
+
+### Run the initialization script:
+```bash
+cd /var/www/heroglob/backend
+
+# Make sure dependencies are installed
+npm install
+
+# Run the database initialization script
+npm run init-db
+```
+
+This script will:
+- ✅ Create all database tables
+- ✅ Set up indexes and foreign keys
+- ✅ Create default admin user
+- ✅ Create default categories
+- ✅ Create default system configuration
+
+### Expected output:
+```
+🚀 Starting database initialization...
+✅ Database connected
+📦 Creating tables...
+✅ Tables created successfully
+🌱 Seeding default data...
+  ✓ Created admin user
+  ✓ Created default categories
+  ✓ Created system config
+
+🎉 Database initialization completed successfully!
+
+📝 Default admin credentials:
+   Email: admin@heroglobal.io.vn
+   Password: admin123
+   ⚠️  Please change this password immediately!
+```
+
+### Verify tables were created:
+```bash
+mysql -u heroglob_user1 -p heroglob1 -e "SHOW TABLES;"
+```
+
+You should see all 13 tables listed.
+
+**Important:** The script creates a default admin user with password `admin123`. Change this immediately after deployment!
+
+---
+
 ## 8. Build Applications
 
 **Important:** Build each application separately in its own directory.
@@ -507,6 +559,104 @@ sudo netstat -tulpn | grep :3001
 sudo netstat -tulpn | grep :4001
 sudo netstat -tulpn | grep :5174
 ```
+
+### Database Connection Issues:
+
+**Error: "Access denied for user 'root'@'localhost'"**
+
+This means the backend is not reading the `.env` file correctly. Follow these steps:
+
+**Step 1: Check if .env file exists in the correct location**
+```bash
+cd /var/www/heroglob/backend
+ls -la .env
+```
+
+**Step 2: Create or update the .env file**
+```bash
+cd /var/www/heroglob/backend
+nano .env
+```
+
+Make sure it has (update with your actual credentials):
+```env
+NODE_ENV=production
+PORT=4001
+
+# Database - IMPORTANT: Use the correct credentials
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=heroglob_user1
+DB_PASSWORD=password
+DB_DATABASE=heroglob1
+DB_SYNCHRONIZE=true
+DB_LOGGING=false
+
+# JWT
+JWT_SECRET=your_super_secret_jwt_key_change_this_in_production
+
+# CORS
+CORS_ORIGIN=https://heroglobal.io.vn,https://admin.heroglobal.io.vn
+```
+
+Save with `Ctrl+O`, `Enter`, then `Ctrl+X`
+
+**Step 3: Verify the database and user exist**
+```bash
+mysql -u heroglob_user1 -p heroglob1
+# Enter password when prompted
+# If successful, type: SHOW TABLES; then EXIT;
+```
+
+**Step 4: If database doesn't exist, create it:**
+```bash
+sudo mysql
+
+CREATE DATABASE IF NOT EXISTS heroglob1;
+CREATE USER IF NOT EXISTS 'heroglob_user1'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON heroglob1.* TO 'heroglob_user1'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+**Step 5: IMPORTANT - Delete PM2 process and restart it**
+
+The issue is that PM2 caches the old environment variables. You need to delete and restart:
+
+```bash
+cd /var/www/heroglob
+
+# Delete the old process
+pm2 delete heroglob-backend
+
+# Start it again (it will read the new .env file)
+pm2 start ecosystem.config.js --only heroglob-backend
+
+# Save PM2 configuration
+pm2 save
+
+# Check logs
+pm2 logs heroglob-backend --lines 50
+```
+
+**Alternative: If you don't have ecosystem.config.js yet**
+```bash
+cd /var/www/heroglob/backend
+
+# Delete old process
+pm2 delete heroglob-backend
+
+# Start directly
+pm2 start dist/main.js --name heroglob-backend
+
+# Save
+pm2 save
+
+# Check logs
+pm2 logs heroglob-backend
+```
+
+The backend should now connect successfully!
 
 ### Restart all services:
 ```bash
