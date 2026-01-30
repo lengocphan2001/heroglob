@@ -66,7 +66,7 @@ async function bootstrap() {
 
         // Insert default admin user
         await dataSource.query(`
-      INSERT INTO users (email, name, role, password_hash, hero_balance, usdt_balance, rank)
+      INSERT INTO users (email, name, \`role\`, password_hash, hero_balance, usdt_balance, \`rank\`)
       VALUES (?, ?, ?, ?, ?, ?, ?)
     `, [
             'admin@heroglobal.io.vn',
