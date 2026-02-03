@@ -1,5 +1,5 @@
 import Cookies from 'js-cookie';
-import { API_URL } from './constants';
+import { API_URL } from '../constants';
 
 type RequestConfig = RequestInit & { params?: Record<string, string> };
 
@@ -15,7 +15,9 @@ function buildUrl(path: string, params?: Record<string, string>): string {
 export async function api<T>(path: string, config: RequestConfig = {}): Promise<T> {
   const { params, ...init } = config;
   const url = buildUrl(path, params);
-  const token = Cookies.get('token');
+
+  // Only use Cookies in the browser
+  const token = typeof document !== 'undefined' ? Cookies.get('token') : undefined;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
