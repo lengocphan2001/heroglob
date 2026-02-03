@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@/contexts/WalletContext';
+import { useConfig } from '@/contexts/ConfigContext';
 import { ArrowLeft, Users, Copy, Share2 } from 'lucide-react';
 
 interface ReferralStats {
@@ -21,6 +22,7 @@ interface Referral {
 export default function ReferralsPage() {
     const router = useRouter();
     const { address } = useWallet();
+    const { tokenSymbol } = useConfig();
     const [stats, setStats] = useState<ReferralStats | null>(null);
     const [referrals, setReferrals] = useState<Referral[]>([]);
     const [loading, setLoading] = useState(true);
@@ -86,7 +88,7 @@ export default function ReferralsPage() {
                 <button onClick={() => router.back()} className="text-slate-900 flex size-12 shrink-0 items-center">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">Referrals</h2>
+                <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">Giới Thiệu</h2>
                 <div className="w-12"></div>
             </div>
 
@@ -101,41 +103,41 @@ export default function ReferralsPage() {
                             {/* Stats Cards */}
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Total Referrals</p>
+                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Giới Thiệu</p>
                                     <p className="text-2xl font-bold text-slate-900">{stats?.totalReferrals || 0}</p>
                                 </div>
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Total Earnings</p>
+                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Thu Nhập</p>
                                     <p className="text-2xl font-bold text-[#330df2]">{stats?.totalEarnings || 0} HERO</p>
                                 </div>
                             </div>
 
                             {/* Referral Link */}
                             <div className="bg-gradient-to-br from-[#330df2] to-[#7c3aed] rounded-3xl p-6 mb-8 text-white shadow-xl shadow-[#330df2]/20">
-                                <h3 className="font-bold text-lg mb-2">Your Referral Code</h3>
+                                <h3 className="font-bold text-lg mb-2">Mã Giới Thiệu Của Bạn</h3>
                                 <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 flex items-center justify-between mb-4 border border-white/20">
                                     <code className="font-mono text-base font-bold tracking-widest">{stats?.referralCode || '...'}</code>
                                     <button onClick={copyReferralLink} className="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
                                         <Copy className="w-5 h-5" />
                                     </button>
                                 </div>
-                                {copied && <p className="text-xs text-green-300 mb-2 font-medium">✓ Link copied to clipboard!</p>}
+                                {copied && <p className="text-xs text-green-300 mb-2 font-medium">✓ Đã sao chép link!</p>}
                                 <button
                                     onClick={copyReferralLink}
                                     className="w-full bg-white text-[#330df2] rounded-xl py-3 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-sm"
                                 >
                                     <Share2 className="w-5 h-5" />
-                                    Share Referral Link
+                                    Chia Sẻ Link Giới Thiệu
                                 </button>
                             </div>
 
                             {/* Referral List */}
-                            <h3 className="text-slate-900 text-lg font-bold mb-4 px-2">Referral History</h3>
+                            <h3 className="text-slate-900 text-lg font-bold mb-4 px-2">Lịch Sử Giới Thiệu</h3>
                             {referrals.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-10 text-center bg-slate-50 rounded-3xl p-8">
                                     <Users className="w-16 h-16 text-slate-300 mb-4" />
-                                    <p className="text-slate-600 font-medium">No referrals yet</p>
-                                    <p className="text-sm text-slate-400 mt-1">Share your link to start earning!</p>
+                                    <p className="text-slate-600 font-medium">Chưa có giới thiệu nào</p>
+                                    <p className="text-sm text-slate-400 mt-1">Chia sẻ link để bắt đầu kiếm tiền!</p>
                                 </div>
                             ) : (
                                 <div className="space-y-3">
@@ -147,12 +149,12 @@ export default function ReferralsPage() {
                                             <div>
                                                 <p className="font-mono text-sm font-bold text-slate-900">{formatAddress(ref.referredWallet)}</p>
                                                 <p className="text-xs text-slate-500 mt-1 font-medium">
-                                                    Joined {new Date(ref.createdAt).toLocaleDateString()}
+                                                    Tham gia {new Date(ref.createdAt).toLocaleDateString()}
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="text-sm font-bold text-[#330df2]">{ref.totalSpent} HERO</p>
-                                                <p className="text-xs text-slate-500 font-medium">Total Spent</p>
+                                                <p className="text-sm font-bold text-[#330df2]">{ref.totalSpent} {tokenSymbol}</p>
+                                                <p className="text-xs text-slate-500 font-medium">Đã chi tiêu</p>
                                             </div>
                                         </div>
                                     ))}

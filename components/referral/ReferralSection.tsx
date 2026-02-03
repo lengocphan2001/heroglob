@@ -30,7 +30,7 @@ export function ReferralSection() {
         setCode(res.code);
         setTotalReferred(stats.totalReferred);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, [isConnected, address]);
 
@@ -83,7 +83,7 @@ export function ReferralSection() {
             className="flex shrink-0 items-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
           >
             <Copy className="size-4" />
-            {copied ? 'Đã copy!' : 'Copy'}
+            {copied ? 'Đã copy!' : 'Sao chép'}
           </button>
         </div>
       ) : null}

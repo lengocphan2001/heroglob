@@ -101,6 +101,78 @@ export function Settings() {
               Lưu
             </Button>
           </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
+                label="Tên Token Dự Án"
+                value={configs['PROJECT_TOKEN_NAME'] || 'Hero Coin'}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PROJECT_TOKEN_NAME: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={() =>
+                handleSave('PROJECT_TOKEN_NAME', configs['PROJECT_TOKEN_NAME'])
+              }
+              disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
+                label="Ký hiệu Token (Symbol)"
+                value={configs['PROJECT_TOKEN_SYMBOL'] || 'HERO'}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PROJECT_TOKEN_SYMBOL: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={() =>
+                handleSave('PROJECT_TOKEN_SYMBOL', configs['PROJECT_TOKEN_SYMBOL'])
+              }
+              disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
+                label="Địa chỉ ví nhận tiền (Payment Receiver)"
+                value={configs['PAYMENT_RECEIVER_ADDRESS'] || ''}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PAYMENT_RECEIVER_ADDRESS: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={() =>
+                handleSave('PAYMENT_RECEIVER_ADDRESS', configs['PAYMENT_RECEIVER_ADDRESS'])
+              }
+              disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
         </div>
       </Card>
 

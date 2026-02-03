@@ -7,7 +7,7 @@ type Props = {
   title?: string;
 };
 
-export function WalletHeader({ title = 'My Wallet' }: Props) {
+export function WalletHeader({ title = 'Ví Của Tôi' }: Props) {
   return (
     <header className="z-10 flex items-center justify-between p-6">
       <Link

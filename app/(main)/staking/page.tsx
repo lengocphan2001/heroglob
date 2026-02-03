@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@/contexts/WalletContext';
+import { useConfig } from '@/contexts/ConfigContext';
 import { ArrowLeft, DollarSign, TrendingUp } from 'lucide-react';
 
 interface Investment {
@@ -19,6 +20,7 @@ interface Investment {
 export default function StakingPage() {
     const router = useRouter();
     const { address } = useWallet();
+    const { tokenSymbol } = useConfig();
     const [investments, setInvestments] = useState<Investment[]>([]);
     const [totalStaked, setTotalStaked] = useState(0);
     const [totalRewards, setTotalRewards] = useState(0);
@@ -77,12 +79,12 @@ export default function StakingPage() {
                             {/* Stats Cards */}
                             <div className="grid grid-cols-2 gap-4 mb-6">
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Total Staked</p>
+                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Đã Stake</p>
                                     <p className="text-2xl font-bold text-slate-900">{totalStaked.toFixed(2)}</p>
                                     <p className="text-xs text-slate-400 font-medium">HERO</p>
                                 </div>
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Total Rewards</p>
+                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Phần Thưởng</p>
                                     <p className="text-2xl font-bold text-[#330df2]">{totalRewards.toFixed(2)}</p>
                                     <p className="text-xs text-slate-400 font-medium">HERO</p>
                                 </div>
@@ -94,24 +96,24 @@ export default function StakingPage() {
                                     <div className="bg-white/20 p-2 rounded-xl backdrop-blur-md">
                                         <TrendingUp className="w-5 h-5" />
                                     </div>
-                                    <h3 className="font-bold text-lg">Current APY</h3>
+                                    <h3 className="font-bold text-lg">APY Hiện Tại</h3>
                                 </div>
                                 <p className="text-4xl font-bold mb-1 ml-1">10.0%</p>
-                                <p className="text-sm opacity-80 ml-1 font-medium">Annual Percentage Yield</p>
+                                <p className="text-sm opacity-80 ml-1 font-medium">Lợi nhuận phần trăm hàng năm</p>
                             </div>
 
                             {/* Investments List */}
-                            <h3 className="text-slate-900 text-lg font-bold mb-4 px-2">Active Stakes</h3>
+                            <h3 className="text-slate-900 text-lg font-bold mb-4 px-2">Gói Đang Stake</h3>
                             {investments.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center py-10 text-center bg-slate-50 rounded-3xl p-8">
                                     <DollarSign className="w-16 h-16 text-slate-300 mb-4" />
-                                    <p className="text-slate-600 font-medium font-lg">No active stakes</p>
-                                    <p className="text-sm text-slate-400 mt-2 mb-6 font-medium">Start staking to earn rewards!</p>
+                                    <p className="text-slate-600 font-medium font-lg">Không có gói stake nào</p>
+                                    <p className="text-sm text-slate-400 mt-2 mb-6 font-medium">Bắt đầu stake để nhận thưởng!</p>
                                     <button
                                         onClick={() => router.push('/explore')}
                                         className="px-6 py-3 bg-[#330df2] text-white rounded-xl font-bold hover:opacity-90 transition-opacity shadow-lg shadow-[#330df2]/20 w-full"
                                     >
-                                        Explore Staking Options
+                                        Khám Phá Gói Stake
                                     </button>
                                 </div>
                             ) : (
@@ -137,12 +139,12 @@ export default function StakingPage() {
                                             </div>
                                             <div className="flex items-center justify-between pt-3 border-t border-slate-200/60">
                                                 <div>
-                                                    <p className="text-xs text-slate-500 font-medium mb-0.5">Staked Amount</p>
-                                                    <p className="text-base font-bold text-slate-900">{inv.amount.toFixed(2)} HERO</p>
+                                                    <p className="text-xs text-slate-500 font-medium mb-0.5">Số Tiền Stake</p>
+                                                    <p className="text-base font-bold text-slate-900">{inv.amount.toFixed(2)} {tokenSymbol}</p>
                                                 </div>
                                                 <div className="text-right">
-                                                    <p className="text-xs text-slate-500 font-medium mb-0.5">Est. Rewards</p>
-                                                    <p className="text-base font-bold text-[#330df2]">{(inv.amount * 0.1).toFixed(2)} HERO</p>
+                                                    <p className="text-xs text-slate-500 font-medium mb-0.5">Thưởng Dự Kiến</p>
+                                                    <p className="text-base font-bold text-[#330df2]">{(inv.amount * 0.1).toFixed(2)} {tokenSymbol}</p>
                                                 </div>
                                             </div>
                                         </div>

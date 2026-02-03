@@ -7,6 +7,8 @@ import { Payout } from './entities/payout.entity';
 import { SystemConfigService } from '../system-config/system-config.service';
 import { UsersService } from '../users/users.service';
 
+import { ActivePowerService } from '../active-power/active-power.service';
+
 @Injectable()
 export class InvestmentsService {
     private readonly logger = new Logger(InvestmentsService.name);
@@ -18,12 +20,27 @@ export class InvestmentsService {
         private payoutRepository: Repository<Payout>,
         private configService: SystemConfigService,
         private usersService: UsersService,
+        private activePowerService: ActivePowerService,
     ) { }
 
-    async activatePower(userId: number, amount: number) {
-        const minUsdt = parseFloat(await this.configService.get('INVESTMENT_MIN_USDT', '10'));
-        if (amount < minUsdt) {
-            throw new BadRequestException(`Minimum investment is ${minUsdt} USDT`);
+    async activatePower(userId: number, input: { amount?: number; packageId?: number }) {
+        let amount = 0;
+        let profitPercent = 0;
+
+        if (input.packageId) {
+            const pkg = await this.activePowerService.findOne(input.packageId);
+            if (!pkg.isActive) throw new BadRequestException('Package is not active');
+            amount = Number(pkg.price);
+            profitPercent = Number(pkg.dailyProfitPercent);
+        } else if (input.amount) {
+            amount = Number(input.amount);
+            const minUsdt = parseFloat(await this.configService.get('INVESTMENT_MIN_USDT', '10'));
+            if (amount < minUsdt) {
+                throw new BadRequestException(`Minimum investment is ${minUsdt} USDT`);
+            }
+            profitPercent = parseFloat(await this.configService.get('INVESTMENT_PROFIT_PERCENT', '1'));
+        } else {
+            throw new BadRequestException('Invalid activation payload');
         }
 
         const user = await this.usersService.findOne(userId);
@@ -37,8 +54,6 @@ export class InvestmentsService {
 
         // Deduct balance
         await this.usersService.updateBalance(userId, -amount);
-
-        const profitPercent = parseFloat(await this.configService.get('INVESTMENT_PROFIT_PERCENT', '1'));
 
         const investment = this.investmentRepository.create({
             userId,

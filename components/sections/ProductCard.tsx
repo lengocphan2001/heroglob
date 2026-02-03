@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { Zap } from 'lucide-react';
 import type { Product } from '@/lib/api/products';
 import { formatPriceDisplay } from '@/lib/formatPrice';
+import { useConfig } from '@/contexts/ConfigContext';
 
 export type ProductCardProps = {
   product: Product;
@@ -18,6 +19,7 @@ export function ProductCard({
   onBuyHero,
   isBuying = null,
 }: ProductCardProps) {
+  const { tokenSymbol } = useConfig();
   const priceUsdt = product.priceUsdt ?? '0';
   const priceHero = product.priceHero ?? '0';
   const hasUsdt = parseFloat(priceUsdt) > 0;
@@ -68,7 +70,7 @@ export function ProductCard({
           )}
           {hasHero && (
             <span className="rounded-md bg-[var(--color-primary)] px-2 py-0.5 text-[10px] font-bold text-white">
-              {displayHero} HERO
+              {displayHero} {tokenSymbol}
             </span>
           )}
           {!hasUsdt && !hasHero && (
@@ -88,7 +90,7 @@ export function ProductCard({
                 disabled={isBuying !== null}
                 className="flex-1 rounded-lg bg-emerald-600 py-2 text-[11px] font-bold text-white transition-opacity hover:bg-emerald-700 disabled:opacity-50"
               >
-                {isBuying === 'usdt' ? '...' : 'Buy USDT'}
+                {isBuying === 'usdt' ? '...' : 'Mua USDT'}
               </button>
             )}
             {hasHero && onBuyHero && (
@@ -102,7 +104,7 @@ export function ProductCard({
                 disabled={isBuying !== null}
                 className="flex-1 rounded-lg bg-[var(--color-primary)] py-2 text-[11px] font-bold text-white transition-opacity hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
               >
-                {isBuying === 'hero' ? '...' : 'Buy HERO'}
+                {isBuying === 'hero' ? '...' : `Mua ${tokenSymbol}`}
               </button>
             )}
           </div>

@@ -56,7 +56,7 @@ export default function NFTsPage() {
                 <button onClick={() => router.back()} className="text-slate-900 flex size-12 shrink-0 items-center">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">My NFTs</h2>
+                <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">NFTs Của Tôi</h2>
                 <div className="w-12"></div>
             </div>
 
@@ -69,13 +69,13 @@ export default function NFTsPage() {
                     ) : nfts.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-20 text-center">
                             <Grid3x3 className="w-16 h-16 text-slate-300 mb-4" />
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">No NFTs Yet</h3>
-                            <p className="text-slate-500 mb-6">Start collecting NFTs from the marketplace</p>
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Chưa có NFT nào</h3>
+                            <p className="text-slate-500 mb-6">Khám phá thị trường để sưu tập NFT</p>
                             <button
                                 onClick={() => router.push('/explore')}
                                 className="px-6 py-3 bg-[#330df2] text-white rounded-xl font-semibold hover:opacity-90 transition-opacity shadow-lg shadow-[#330df2]/20"
                             >
-                                Explore Marketplace
+                                Khám Phá Thị Trường
                             </button>
                         </div>
                     ) : (
@@ -118,7 +118,7 @@ export default function NFTsPage() {
                                                 <div className="h-4 w-4 rounded-full bg-blue-500/20" />
                                             )}
                                             <p className="text-xs text-slate-500 truncate">
-                                                {nft.creatorHandle || 'Unknown Creator'}
+                                                {nft.creatorHandle || 'Không rõ tác giả'}
                                             </p>
                                         </div>
                                     </div>

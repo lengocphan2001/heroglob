@@ -11,9 +11,10 @@ import { getCategories } from '@/lib/api/categories';
 import { getProducts, type Product } from '@/lib/api/products';
 import { createOrder } from '@/lib/api/orders';
 import { useWallet } from '@/contexts/WalletContext';
+import { useConfig } from '@/contexts/ConfigContext';
 import { getUsdtAddress, getUsdtDecimals, HERO_TOKEN } from '@/lib/wallet/tokens';
-import { sendTokenTransfer, toRawAmount } from '@/lib/wallet/transfer';
-import { PAYMENT_RECEIVER_ADDRESS } from '@/lib/constants';
+import { sendTokenTransfer, toRawAmount, waitForTransaction, checkBalance } from '@/lib/wallet/transfer';
+
 import { formatPriceDisplay } from '@/lib/formatPrice';
 
 function getEthereum() {
@@ -29,6 +30,7 @@ function getExplorerTxUrl(chainId: string | null, txHash: string): string {
 
 export default function ExplorePage() {
   const { isConnected, address, chainId } = useWallet();
+  const { tokenSymbol, paymentReceiverAddress } = useConfig();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [categories, setCategories] = useState<{ id: string; label: string }[]>([{ id: 'all', label: 'Tất cả' }]);
@@ -87,7 +89,7 @@ export default function ExplorePage() {
         alert('Vui lòng kết nối ví.');
         return;
       }
-      if (!PAYMENT_RECEIVER_ADDRESS) {
+      if (!paymentReceiverAddress) {
         alert('Chưa cấu hình địa chỉ nhận thanh toán.');
         return;
       }
@@ -114,14 +116,20 @@ export default function ExplorePage() {
         onConfirmTransfer: async () => {
           try {
             const raw = toRawAmount(priceUsdt, getUsdtDecimals(chainId));
+
+            await checkBalance(ethereum, address, usdtAddress, raw);
+
             const txHash = await sendTokenTransfer(
               ethereum,
               address,
               usdtAddress,
-              PAYMENT_RECEIVER_ADDRESS,
+              paymentReceiverAddress,
               raw,
             );
             setTxModal((m) => ({ ...m, status: 'pending', txHash }));
+
+            await waitForTransaction(ethereum, txHash);
+
             await createOrder({
               productId: product.id,
               walletAddress: address,
@@ -142,7 +150,7 @@ export default function ExplorePage() {
         },
       });
     },
-    [isConnected, address, chainId],
+    [isConnected, address, chainId, paymentReceiverAddress],
   );
 
   const handleBuyHero = useCallback(
@@ -151,7 +159,7 @@ export default function ExplorePage() {
         alert('Vui lòng kết nối ví.');
         return;
       }
-      if (!PAYMENT_RECEIVER_ADDRESS) {
+      if (!paymentReceiverAddress) {
         alert('Chưa cấu hình địa chỉ nhận thanh toán.');
         return;
       }
@@ -168,19 +176,25 @@ export default function ExplorePage() {
         open: true,
         status: 'confirming',
         amountDisplay,
-        tokenLabel: 'HERO',
+        tokenLabel: tokenSymbol, // Use dynamic token symbol
         productTitle: product.title,
         onConfirmTransfer: async () => {
           try {
             const raw = toRawAmount(priceHero, 18);
+
+            await checkBalance(ethereum, address, HERO_TOKEN.address, raw);
+
             const txHash = await sendTokenTransfer(
               ethereum,
               address,
               HERO_TOKEN.address,
-              PAYMENT_RECEIVER_ADDRESS,
+              paymentReceiverAddress,
               raw,
             );
             setTxModal((m) => ({ ...m, status: 'pending', txHash }));
+
+            await waitForTransaction(ethereum, txHash);
+
             await createOrder({
               productId: product.id,
               walletAddress: address,
@@ -201,7 +215,7 @@ export default function ExplorePage() {
         },
       });
     },
-    [isConnected, address],
+    [isConnected, address, tokenSymbol, paymentReceiverAddress],
   );
 
   return (

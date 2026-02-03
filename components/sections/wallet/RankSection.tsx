@@ -15,7 +15,7 @@ export function RankSection() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <div className="p-4 text-center text-sm text-slate-500">Loading rank info...</div>;
+    if (loading) return <div className="p-4 text-center text-sm text-slate-500">Đang tải thông tin xếp hạng...</div>;
     if (!stats) return null;
 
     const progress = Math.min((stats.referrals / stats.target) * 100, 100);

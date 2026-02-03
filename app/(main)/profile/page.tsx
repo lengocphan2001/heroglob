@@ -93,7 +93,7 @@ export default function ProfilePage() {
         <button onClick={() => router.back()} className="text-slate-900 flex size-12 shrink-0 items-center">
           <ArrowLeft className="w-6 h-6" />
         </button>
-        <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">Profile</h2>
+        <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">Hồ Sơ</h2>
         <button className="flex w-12 items-center justify-end text-slate-900">
           <Share2 className="w-5 h-5" />
         </button>
@@ -118,16 +118,16 @@ export default function ProfilePage() {
             </div>
 
             <div className="flex flex-col items-center justify-center">
-              <p className="text-slate-900 text-2xl font-bold">Crypto Explorer</p>
+              <p className="text-slate-900 text-2xl font-bold">Nhà Thám Hiểm</p>
               <div className="flex items-center gap-2 mt-1">
                 <p className="text-slate-500 text-base font-medium">{formatAddress(address)}</p>
                 <button onClick={copyAddress} className="text-[#330df2] cursor-pointer">
                   <Copy className="w-4 h-4" />
                 </button>
-                {copied && <span className="text-xs text-green-500">Copied!</span>}
+                {copied && <span className="text-xs text-green-500">Đã sao chép!</span>}
               </div>
               <p className="text-slate-500 text-sm font-normal mt-1 flex items-center gap-1">
-                Verified Meta-Citizen
+                Thành Viên Đã Xác Minh
               </p>
             </div>
           </div>
@@ -137,7 +137,7 @@ export default function ProfilePage() {
         <div className="flex items-stretch justify-between gap-4 rounded-3xl bg-gradient-to-br from-[#330df2] to-[#7c3aed] p-6 shadow-xl text-white">
           <div className="flex flex-[2_2_0px] flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <p className="text-white/80 text-xs font-medium uppercase tracking-wider">Wallet Earnings</p>
+              <p className="text-white/80 text-xs font-medium uppercase tracking-wider">Thu Nhập Ví</p>
               <p className="text-white text-3xl font-bold">{stats.heroBalance.toFixed(2)} HERO</p>
               <p className="text-white/80 text-sm font-medium">
                 {stats.ethBalance.toFixed(4)} ETH / ${stats.usdValue.toFixed(2)}
@@ -147,7 +147,7 @@ export default function ProfilePage() {
               onClick={() => router.push('/wallet')}
               className="mt-2 w-fit rounded-xl bg-white/20 px-4 py-2 text-sm font-bold text-white backdrop-blur-md transition-all hover:bg-white/30"
             >
-              Manage Wallet
+              Quản Lý Ví
             </button>
           </div>
           <div className="flex items-center justify-center opacity-80">
@@ -158,7 +158,7 @@ export default function ProfilePage() {
 
       {/* Content Section - Matching WalletPage structure */}
       <div className="mt-2 flex-1 rounded-t-[40px] border-t border-slate-100 bg-white pt-6">
-        <h3 className="text-slate-900 text-lg font-bold px-8 pb-4">Assets & Community</h3>
+        <h3 className="text-slate-900 text-lg font-bold px-8 pb-4">Tài Sản & Cộng Đồng</h3>
 
         <div className="flex flex-col gap-2 px-6">
           {/* My NFTs */}
@@ -169,8 +169,8 @@ export default function ProfilePage() {
             <div className="text-[#330df2] flex items-center justify-center rounded-xl bg-white shrink-0 size-12 shadow-sm">
               <Grid3x3 className="w-6 h-6" />
             </div>
-            <p className="text-slate-900 text-base font-bold flex-1">My NFTs</p>
-            <span className="text-slate-500 text-sm font-medium">{stats.nftCount} Items</span>
+            <p className="text-slate-900 text-base font-bold flex-1">NFTs Của Tôi</p>
+            <span className="text-slate-500 text-sm font-medium">{stats.nftCount} Vật phẩm</span>
             <div className="shrink-0 text-slate-400 group-hover:translate-x-1 transition-transform">
               <ArrowLeft className="w-5 h-5 rotate-180" />
             </div>
@@ -184,8 +184,8 @@ export default function ProfilePage() {
             <div className="text-[#330df2] flex items-center justify-center rounded-xl bg-white shrink-0 size-12 shadow-sm">
               <Users className="w-6 h-6" />
             </div>
-            <p className="text-slate-900 text-base font-bold flex-1">Referral History</p>
-            <span className="text-slate-500 text-sm font-medium">{stats.referralCount} Refs</span>
+            <p className="text-slate-900 text-base font-bold flex-1">Lịch Sử Giới Thiệu</p>
+            <span className="text-slate-500 text-sm font-medium">{stats.referralCount} Bạn</span>
             <div className="shrink-0 text-slate-400 group-hover:translate-x-1 transition-transform">
               <ArrowLeft className="w-5 h-5 rotate-180" />
             </div>
@@ -199,7 +199,7 @@ export default function ProfilePage() {
             <div className="text-[#330df2] flex items-center justify-center rounded-xl bg-white shrink-0 size-12 shadow-sm">
               <DollarSign className="w-6 h-6" />
             </div>
-            <p className="text-slate-900 text-base font-bold flex-1">Staking Rewards</p>
+            <p className="text-slate-900 text-base font-bold flex-1">Phần Thưởng Staking</p>
             <span className="text-slate-500 text-sm font-medium">{stats.stakingRewards.toFixed(2)} HERO</span>
             <div className="shrink-0 text-slate-400 group-hover:translate-x-1 transition-transform">
               <ArrowLeft className="w-5 h-5 rotate-180" />
@@ -207,7 +207,7 @@ export default function ProfilePage() {
           </button>
         </div>
 
-        <h3 className="text-slate-900 text-lg font-bold px-8 pt-8 pb-4">Account</h3>
+        <h3 className="text-slate-900 text-lg font-bold px-8 pt-8 pb-4">Tài Khoản</h3>
 
         <div className="flex flex-col gap-2 px-6 pb-8">
           {/* Security */}
@@ -215,7 +215,7 @@ export default function ProfilePage() {
             <div className="text-[#330df2] flex items-center justify-center rounded-xl bg-white shrink-0 size-12 shadow-sm">
               <Shield className="w-6 h-6" />
             </div>
-            <p className="text-slate-900 text-base font-bold flex-1">Security</p>
+            <p className="text-slate-900 text-base font-bold flex-1">Bảo Mật</p>
             <div className="shrink-0 text-slate-400 group-hover:translate-x-1 transition-transform">
               <ArrowLeft className="w-5 h-5 rotate-180" />
             </div>
@@ -226,7 +226,7 @@ export default function ProfilePage() {
             <div className="text-[#330df2] flex items-center justify-center rounded-xl bg-white shrink-0 size-12 shadow-sm">
               <Settings className="w-6 h-6" />
             </div>
-            <p className="text-slate-900 text-base font-bold flex-1">Settings</p>
+            <p className="text-slate-900 text-base font-bold flex-1">Cài Đặt</p>
             <div className="shrink-0 text-slate-400 group-hover:translate-x-1 transition-transform">
               <ArrowLeft className="w-5 h-5 rotate-180" />
             </div>
@@ -242,7 +242,7 @@ export default function ProfilePage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
               </svg>
             </div>
-            <p className="text-red-500 text-base font-bold flex-1">Disconnect Wallet</p>
+            <p className="text-red-500 text-base font-bold flex-1">Ngắt Kết Nối Ví</p>
           </button>
         </div>
       </div>

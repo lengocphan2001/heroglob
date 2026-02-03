@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { LayoutDashboard, Users, Package, FolderTree, ShoppingBag, Settings, Banknote } from 'lucide-react';
+import { LayoutDashboard, Users, Package, FolderTree, ShoppingBag, Settings, Banknote, Zap } from 'lucide-react';
 
 export type NavItem = {
   label: string;
@@ -14,6 +14,7 @@ export const navItems: NavItem[] = [
   { label: 'Sản phẩm (Explore)', path: '/products', icon: Package },
   { label: 'Đơn hàng', path: '/orders', icon: ShoppingBag },
   { label: 'Lịch sử Payout', path: '/payouts', icon: Banknote },
+  { label: 'Active Power', path: '/active-power', icon: Zap },
   { label: 'Cài đặt', path: '/settings', icon: Settings },
 ];
 

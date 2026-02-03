@@ -10,6 +10,7 @@ import { ProductForm } from './pages/ProductForm';
 import { Payouts } from './pages/Payouts';
 import { Orders } from './pages/Orders';
 import { Categories } from './pages/Categories';
+import { ActivePower } from './pages/ActivePower';
 
 const router = createBrowserRouter([
   {
@@ -33,6 +34,7 @@ const router = createBrowserRouter([
       { path: 'products/:id/edit', element: <ProductForm /> },
       { path: 'orders', element: <Orders /> },
       { path: 'payouts', element: <Payouts /> },
+      { path: 'active-power', element: <ActivePower /> },
       { path: 'settings', element: <Settings /> },
       { path: '*', element: <Navigate to="/dashboard" replace /> },
     ],

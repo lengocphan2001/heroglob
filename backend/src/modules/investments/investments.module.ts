@@ -6,12 +6,14 @@ import { Investment } from './entities/investment.entity';
 import { Payout } from './entities/payout.entity';
 import { SystemConfigModule } from '../system-config/system-config.module';
 import { UsersModule } from '../users/users.module';
+import { ActivePowerModule } from '../active-power/active-power.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Investment, Payout]),
     SystemConfigModule,
-    UsersModule
+    UsersModule,
+    ActivePowerModule
   ],
   providers: [InvestmentsService],
   controllers: [InvestmentsController],

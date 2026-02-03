@@ -8,9 +8,9 @@ export class InvestmentsController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('activate')
-    activate(@Req() req, @Body() body: { amount: number }) {
+    activate(@Req() req, @Body() body: { amount?: number; packageId?: number }) {
         const userId = parseInt(req.user.id, 10);
-        return this.investmentsService.activatePower(userId, body.amount);
+        return this.investmentsService.activatePower(userId, body);
     }
 
     @UseGuards(AuthGuard('jwt'))

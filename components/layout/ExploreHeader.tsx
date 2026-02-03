@@ -9,7 +9,7 @@ type Props = {
 };
 
 export function ExploreHeader({
-  title = 'Marketplace',
+  title = 'Khám Phá',
   showNotificationDot = true,
 }: Props) {
   return (

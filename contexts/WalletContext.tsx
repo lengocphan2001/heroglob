@@ -121,48 +121,96 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // Khôi phục phiên đã kết nối khi reload; mặc định chuyển sang BSC (BEP20)
   useEffect(() => {
-    const ethereum = getEthereum();
-    if (!ethereum) return;
-    ethereum
-      .request({ method: 'eth_accounts' })
-      .then((accounts) => {
-        const list = Array.isArray(accounts) ? accounts : [];
-        const address = list[0] ? String(list[0]) : null;
+    const initWallet = async () => {
+      const ethereum = getEthereum();
+      if (!ethereum) return;
+
+      try {
+        const accounts = (await ethereum.request({ method: 'eth_accounts' })) as string[];
+        const address = accounts[0] ? String(accounts[0]) : null;
         if (!address) return;
-        return ethereum.request({ method: 'eth_chainId' }).then(async (hex) => {
-          let chainId = hex ? String(parseInt(String(hex), 16)) : null;
-          if (chainId !== BSC_CHAIN_ID) {
-            await ensureBsc(ethereum);
-            try {
-              const newHex = (await ethereum.request({ method: 'eth_chainId' })) as string;
-              chainId = newHex ? String(parseInt(newHex, 16)) : chainId;
-            } catch {
-              // keep
-            }
+
+        // Auto login on restore to ensure token validity
+        try {
+          const refCode = getStoredRefCode();
+          const { access_token } = await loginWallet(address, refCode);
+          Cookies.set('token', access_token, { expires: 7 });
+        } catch (err) {
+          console.error('Auto-login failed on restore:', err);
+        }
+
+        let chainId: string | null = null;
+        try {
+          const hex = (await ethereum.request({ method: 'eth_chainId' })) as string;
+          chainId = hex ? String(parseInt(hex, 16)) : null;
+        } catch {
+          // ignore
+        }
+
+        if (chainId !== BSC_CHAIN_ID) {
+          await ensureBsc(ethereum);
+          try {
+            const newHex = (await ethereum.request({ method: 'eth_chainId' })) as string;
+            chainId = newHex ? String(parseInt(newHex, 16)) : chainId;
+          } catch {
+            // keep
           }
-          setState((s) => ({ ...s, address, chainId }));
-        });
-      })
-      .catch(() => { });
+        }
+        setState((s) => ({ ...s, address, chainId }));
+      } catch (e) {
+        console.error('Error restoring wallet:', e);
+      }
+    };
+
+    if (getEthereum()) {
+      initWallet();
+    } else {
+      const onEthInit = () => initWallet();
+      window.addEventListener('ethereum#initialized', onEthInit, { once: true });
+      return () => window.removeEventListener('ethereum#initialized', onEthInit);
+    }
   }, []);
 
   useEffect(() => {
     const ethereum = getEthereum();
     if (!ethereum?.on) return;
-    const handleAccounts = (accounts: unknown) => {
+
+    const handleAccounts = async (accounts: unknown) => {
       const list = Array.isArray(accounts) ? accounts : [];
       const address = list[0] ? String(list[0]) : null;
-      setState((s) => (address ? { ...s, address } : { ...s, address: null, chainId: null }));
+
+      if (address) {
+        // If address changed or just connected, ensure backend session
+        try {
+          // Optional: Check if we already have a valid token for this address to avoid spam
+          const refCode = getStoredRefCode();
+          const { access_token } = await loginWallet(address, refCode);
+          Cookies.set('token', access_token, { expires: 7 });
+        } catch (e) {
+          console.error('Login on account change failed', e);
+        }
+        setState((s) => ({ ...s, address }));
+      } else {
+        setState((s) => ({ ...s, address: null, chainId: null }));
+        Cookies.remove('token');
+      }
     };
+
     const handleChain = (chainIdHex: unknown) => {
       const hex = typeof chainIdHex === 'string' ? chainIdHex : '';
       setState((s) => ({ ...s, chainId: hex ? String(parseInt(hex, 16)) : null }));
     };
-    ethereum.on('accountsChanged', handleAccounts);
-    ethereum.on('chainChanged', handleChain);
+
+    // Cast to any to avoid strict type definition conflicts with window.ethereum
+    (ethereum as any).on('accountsChanged', handleAccounts);
+    (ethereum as any).on('chainChanged', handleChain);
+
     return () => {
-      ethereum.on?.('accountsChanged', handleAccounts);
-      ethereum.on?.('chainChanged', handleChain);
+      // Clean up listeners if supported
+      if ((ethereum as any).removeListener) {
+        (ethereum as any).removeListener('accountsChanged', handleAccounts);
+        (ethereum as any).removeListener('chainChanged', handleChain);
+      }
     };
   }, []);
 

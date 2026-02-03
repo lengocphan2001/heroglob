@@ -9,9 +9,10 @@ import type { TxStatus } from '@/components/wallet/TransactionModal';
 import { getProduct, type Product } from '@/lib/api/products';
 import { createOrder } from '@/lib/api/orders';
 import { useWallet } from '@/contexts/WalletContext';
+import { useConfig } from '@/contexts/ConfigContext';
 import { getUsdtAddress, getUsdtDecimals, HERO_TOKEN } from '@/lib/wallet/tokens';
 import { sendTokenTransfer, toRawAmount, waitForTransaction, checkBalance } from '@/lib/wallet/transfer';
-import { PAYMENT_RECEIVER_ADDRESS } from '@/lib/constants';
+
 import { formatPriceDisplay } from '@/lib/formatPrice';
 
 function getEthereum() {
@@ -30,6 +31,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const slug = (params?.id as string) ?? '';
   const { isConnected, address, chainId } = useWallet();
+  const { tokenSymbol, paymentReceiverAddress } = useConfig();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export default function ProductDetailPage() {
       alert('Vui lòng kết nối ví.');
       return;
     }
-    if (!PAYMENT_RECEIVER_ADDRESS) {
+    if (!paymentReceiverAddress) {
       alert('Chưa cấu hình địa chỉ nhận thanh toán.');
       return;
     }
@@ -103,7 +105,7 @@ export default function ProductDetailPage() {
             ethereum,
             address,
             usdtAddress,
-            PAYMENT_RECEIVER_ADDRESS,
+            paymentReceiverAddress,
             raw,
           );
           setTxModal((m) => ({ ...m, status: 'pending', txHash }));
@@ -130,14 +132,14 @@ export default function ProductDetailPage() {
         }
       },
     });
-  }, [product, isConnected, address, chainId]);
+  }, [product, isConnected, address, chainId, paymentReceiverAddress]);
 
   const handleBuyHero = useCallback(async () => {
     if (!product || !isConnected || !address) {
       alert('Vui lòng kết nối ví.');
       return;
     }
-    if (!PAYMENT_RECEIVER_ADDRESS) {
+    if (!paymentReceiverAddress) {
       alert('Chưa cấu hình địa chỉ nhận thanh toán.');
       return;
     }
@@ -154,7 +156,7 @@ export default function ProductDetailPage() {
       open: true,
       status: 'confirming',
       amountDisplay,
-      tokenLabel: 'HERO',
+      tokenLabel: tokenSymbol,
       productTitle: product.title,
       onConfirmTransfer: async () => {
         try {
@@ -166,7 +168,7 @@ export default function ProductDetailPage() {
             ethereum,
             address,
             HERO_TOKEN.address,
-            PAYMENT_RECEIVER_ADDRESS,
+            paymentReceiverAddress,
             raw,
           );
           setTxModal((m) => ({ ...m, status: 'pending', txHash }));
@@ -193,7 +195,7 @@ export default function ProductDetailPage() {
         }
       },
     });
-  }, [product, isConnected, address]);
+  }, [product, isConnected, address, tokenSymbol, paymentReceiverAddress]);
 
   if (loading) {
     return (
@@ -212,7 +214,7 @@ export default function ProductDetailPage() {
           className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--color-primary)]"
         >
           <ArrowLeft className="size-4" />
-          Quay lại Explore
+          Quay lại Khám Phá
         </Link>
       </div>
     );
@@ -306,7 +308,7 @@ export default function ProductDetailPage() {
             )}
             {hasHero && (
               <span className="rounded-xl bg-[var(--color-primary)] px-4 py-2 text-base font-bold text-white">
-                {displayHero} HERO
+                {displayHero} {tokenSymbol}
               </span>
             )}
             {!hasUsdt && !hasHero && (
@@ -333,7 +335,7 @@ export default function ProductDetailPage() {
               disabled={buying !== null}
               className="w-full rounded-xl bg-[var(--color-primary)] py-4 text-base font-bold text-white transition-opacity hover:bg-[var(--color-primary-hover)] disabled:opacity-50"
             >
-              {buying === 'hero' ? 'Đang xử lý...' : `Mua bằng HERO (${displayHero} HERO)`}
+              {buying === 'hero' ? 'Đang xử lý...' : `Mua bằng ${tokenSymbol} (${displayHero} ${tokenSymbol})`}
             </button>
           )}
           {(!hasUsdt || !hasHero) && (

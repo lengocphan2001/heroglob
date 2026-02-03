@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Compass, Wallet, User, type LucideProps } from 'lucide-react';
+import { Home, Compass, Zap, Wallet, User, type LucideProps } from 'lucide-react';
 
 export type NavItem = {
   href: string;
@@ -13,6 +13,7 @@ export type NavItem = {
 const defaultItems: NavItem[] = [
   { href: '/', label: 'Trang chủ', icon: Home },
   { href: '/explore', label: 'Khám phá', icon: Compass },
+  { href: '/active-power', label: 'Kích hoạt', icon: Zap },
   { href: '/wallet', label: 'Ví', icon: Wallet },
   { href: '/profile', label: 'Cá nhân', icon: User },
 ];

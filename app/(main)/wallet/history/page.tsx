@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getTransactionHistory, type TransactionHistoryItem } from '@/lib/api/transactions';
+import { useConfig } from '@/contexts/ConfigContext';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { TrendingUp, Gift, Zap, ShoppingBag, Users, ArrowLeft, Filter, Sparkles } from 'lucide-react';
@@ -11,6 +12,7 @@ type FilterType = 'all' | 'order' | 'commission' | 'payout' | 'nft_reward';
 
 export default function HistoryPage() {
     const router = useRouter();
+    const { tokenSymbol } = useConfig();
     const [transactions, setTransactions] = useState<TransactionHistoryItem[]>([]);
     const [filteredTransactions, setFilteredTransactions] = useState<TransactionHistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
@@ -61,8 +63,8 @@ export default function HistoryPage() {
 
     const getTokenLabel = (tokenType?: string) => {
         if (tokenType === 'usdt') return 'USDT';
-        if (tokenType === 'hero') return 'HERO';
-        return 'HERO';
+        if (tokenType === 'hero') return tokenSymbol;
+        return tokenSymbol;
     };
 
     const filters: { id: FilterType; label: string }[] = [

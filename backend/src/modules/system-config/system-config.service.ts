@@ -15,6 +15,9 @@ export class SystemConfigService implements OnModuleInit {
         const defaults = {
             INVESTMENT_MIN_USDT: '10',
             INVESTMENT_PROFIT_PERCENT: '1', // 1%
+            PROJECT_TOKEN_NAME: 'Hero Coin',
+            PROJECT_TOKEN_SYMBOL: 'HERO',
+            PAYMENT_RECEIVER_ADDRESS: process.env.PAYMENT_RECEIVER_ADDRESS || '',
         };
 
         for (const [key, value] of Object.entries(defaults)) {

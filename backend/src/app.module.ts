@@ -18,6 +18,7 @@ import { RanksModule } from './modules/ranks/ranks.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NFTsModule } from './modules/nfts/nfts.module';
 import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
+import { ActivePowerModule } from './modules/active-power/active-power.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
     TransactionsModule,
     NFTsModule,
     WithdrawalsModule,
+    ActivePowerModule,
   ],
   controllers: [AppController],
   providers: [AppService],

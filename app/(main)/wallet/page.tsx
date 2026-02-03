@@ -12,6 +12,7 @@ import {
 import { WithdrawModal } from '@/components/modals/WithdrawModal';
 import { useWallet } from '@/contexts/WalletContext';
 import { getUserBalance, type UserBalance } from '@/lib/api/balance';
+import { useConfig } from '@/contexts/ConfigContext';
 
 type TabId = 'tokens' | 'nfts' | 'history';
 
@@ -23,6 +24,7 @@ export default function WalletPage() {
   const [error, setError] = useState<string | null>(null);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawToken, setWithdrawToken] = useState<'usdt' | 'hero'>('usdt');
+  const { tokenName, tokenSymbol } = useConfig();
 
   useEffect(() => {
     if (!isConnected) {
@@ -84,7 +86,7 @@ export default function WalletPage() {
         ) : (
           <BalanceCard
             totalUsd={`$${(balance?.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            totalCrypto={`${(balance?.heroBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} HERO`}
+            totalCrypto={`${(balance?.heroBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${tokenSymbol}`}
             changePercent="—"
           />
         )}
@@ -115,8 +117,8 @@ export default function WalletPage() {
                 />
                 <TokenRow
                   iconUrl="/hero-icon.svg"
-                  name="Hero Token"
-                  symbol="HERO"
+                  name={tokenName}
+                  symbol={tokenSymbol}
                   networkLabel="BEP-20"
                   amount={`${(balance?.heroBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 />
