@@ -32,4 +32,13 @@ export class CommissionsController {
         }
         return this.commissionsService.findAll();
     }
+
+    @Get('admin/process')
+    @UseGuards(AuthGuard('jwt'))
+    async processCommissions(@Req() req: UserRequest) {
+        if (req.user.role !== 'admin') {
+            return { error: 'Unauthorized' };
+        }
+        return this.commissionsService.processPendingCommissions();
+    }
 }

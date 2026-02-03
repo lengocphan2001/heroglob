@@ -32,4 +32,14 @@ export class InvestmentsController {
         const userId = parseInt(req.user.id, 10);
         return this.investmentsService.getUserInvestments(userId);
     }
+
+    @UseGuards(AuthGuard('jwt'))
+    @Post('admin/run-payout')
+    async runManualPayout(@Req() req) {
+        if (req.user?.role !== 'admin') {
+            return { error: 'Unauthorized' };
+        }
+        await this.investmentsService.handleDailyPayout();
+        return { message: 'Daily payout triggered successfully' };
+    }
 }
