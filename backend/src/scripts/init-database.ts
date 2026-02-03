@@ -60,9 +60,13 @@ async function bootstrap() {
         console.log('✅ Database connected');
 
         // Drop and recreate schema
-        console.log('📦 Creating tables...');
+        console.log('🗑️  Dropping existing database schema...');
+        await dataSource.query('SET FOREIGN_KEY_CHECKS = 0');
+        await dataSource.dropDatabase();
+        console.log('📦 Recreating tables...');
         await dataSource.synchronize(true); // true = drop existing tables
-        console.log('✅ Tables created successfully');
+        await dataSource.query('SET FOREIGN_KEY_CHECKS = 1');
+        console.log('✅ Tables cleaned and recreated successfully');
 
         // Seed default data using repositories
         console.log('🌱 Seeding default data...');
@@ -78,7 +82,7 @@ async function bootstrap() {
             usdtBalance: 0,
             rank: 'admin',
             walletAddress: null,
-            referralCode: null,
+            referralCode: 'ADMIN', // Set a default referral code for admin
             referredById: null,
         });
         await userRepository.save(adminUser);
@@ -105,6 +109,7 @@ async function bootstrap() {
             { key: 'referral_commission_rate', value: '0.1' },
             { key: 'min_withdrawal_amount', value: '10' },
             { key: 'PROJECT_NAME', value: 'Hero Global' },
+            { key: 'PROJECT_LOGO', value: '' }, // New project logo config
             { key: 'PROJECT_TOKEN_NAME', value: 'Hero Coin' },
             { key: 'PROJECT_TOKEN_SYMBOL', value: 'HERO' },
         ];
