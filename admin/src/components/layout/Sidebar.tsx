@@ -8,8 +8,19 @@ interface SidebarProps {
   onToggle: () => void;
 }
 
+import { useEffect, useState } from 'react';
+import { systemApi } from '../../api/system';
+
 export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const location = useLocation();
+  const [projectName, setProjectName] = useState('HeroGlob');
+
+  useEffect(() => {
+    systemApi.getAll().then(configs => {
+      const name = configs.find(c => c.key === 'PROJECT_NAME')?.value;
+      if (name) setProjectName(name);
+    }).catch(console.error);
+  }, []);
 
   return (
     <aside
@@ -26,7 +37,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           </div>
           {!isCollapsed && (
             <span className="truncate font-bold text-zinc-900 dark:text-zinc-100">
-              HeroGlob
+              {projectName}
             </span>
           )}
         </div>

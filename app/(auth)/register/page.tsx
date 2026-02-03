@@ -7,11 +7,13 @@ import { Mail, Lock, User, UserPlus, ArrowRight, Wallet } from 'lucide-react';
 import { register, registerWallet } from '@/lib/auth';
 import { getStoredRefCode } from '@/lib/api/referrals';
 import Cookies from 'js-cookie';
+import { useConfig } from '@/contexts/ConfigContext';
 
 function RegisterForm() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const walletAddress = searchParams.get('wallet');
+    const { projectName } = useConfig();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -83,7 +85,7 @@ function RegisterForm() {
                     <p className="text-slate-500">
                         {walletAddress
                             ? 'Nhập email, tên và mã giới thiệu (người mời) để hoàn tất đăng ký'
-                            : 'Tham gia Aetheria Metaverse ngay hôm nay'}
+                            : `Tham gia ${projectName} Metaverse ngay hôm nay`}
                     </p>
                 </div>
 

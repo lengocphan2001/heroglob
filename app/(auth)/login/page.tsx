@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation';
 import { Mail, Lock, ArrowRight, Wallet } from 'lucide-react';
 import { login } from '@/lib/auth';
 import Cookies from 'js-cookie';
+import { useConfig } from '@/contexts/ConfigContext';
 
 export default function LoginPage() {
     const router = useRouter();
+    const { projectName } = useConfig();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -43,7 +45,7 @@ export default function LoginPage() {
             <div className="flex flex-1 flex-col justify-center">
                 <div className="mb-8 text-center">
                     <h1 className="mb-2 text-3xl font-bold text-slate-900">Đăng nhập</h1>
-                    <p className="text-slate-500">Chào mừng trở lại với Aetheria</p>
+                    <p className="text-slate-500">Chào mừng trở lại với {projectName}</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-4">

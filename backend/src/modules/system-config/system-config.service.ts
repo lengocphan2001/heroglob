@@ -13,6 +13,8 @@ export class SystemConfigService implements OnModuleInit {
     async onModuleInit() {
         // Seed default values
         const defaults = {
+            PROJECT_NAME: 'HeroGlob',
+            PROJECT_DESCRIPTION: 'Metaverse & NFTs',
             INVESTMENT_MIN_USDT: '10',
             INVESTMENT_PROFIT_PERCENT: '1', // 1%
             PROJECT_TOKEN_NAME: 'Hero Coin',

@@ -6,6 +6,8 @@ import { ReferralTracker } from "@/components/ReferralTracker";
 import { Suspense } from "react";
 import "./globals.css";
 
+import { getAppConfig } from "@/lib/api/system";
+
 const plusJakarta = Plus_Jakarta_Sans({
   variable: "--font-display",
   subsets: ["latin"],
@@ -13,10 +15,21 @@ const plusJakarta = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "Aetheria – Metaverse & NFTs",
-  description: "Khám phá metaverse và các NFT",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  try {
+    const { projectName, projectDescription } = await getAppConfig();
+    return {
+      title: `${projectName} – ${projectDescription}`,
+      description: projectDescription,
+    };
+  } catch (error) {
+    console.error('Failed to fetch metadata', error);
+    return {
+      title: "HeroGlob – Metaverse & NFTs",
+      description: "Khám phá metaverse và các NFT",
+    };
+  }
+}
 
 export default function RootLayout({
   children,

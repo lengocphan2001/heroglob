@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
+import { systemApi } from '../api/system';
 
 export function Login() {
   const { login, isAuthenticated, isLoading } = useAuth();
@@ -11,10 +12,18 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [projectName, setProjectName] = useState('HeroGlob');
 
   useEffect(() => {
     if (isAuthenticated) navigate('/', { replace: true });
   }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    systemApi.getAll().then(configs => {
+      const name = configs.find(c => c.key === 'PROJECT_NAME')?.value;
+      if (name) setProjectName(name);
+    }).catch(console.error);
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -44,7 +53,7 @@ export function Login() {
           </div>
         </div>
         <h1 className="text-center text-xl font-semibold text-zinc-900 dark:text-zinc-100">
-          HeroGlob Admin
+          {projectName} Admin
         </h1>
         <p className="mt-1 text-center text-sm text-zinc-500 dark:text-zinc-400">
           Đăng nhập để tiếp tục

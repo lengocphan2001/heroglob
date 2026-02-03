@@ -55,6 +55,54 @@ export function Settings() {
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <Input
+                label="Tên dự án"
+                value={configs['PROJECT_NAME'] || 'HeroGlob'}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PROJECT_NAME: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={() =>
+                handleSave('PROJECT_NAME', configs['PROJECT_NAME'])
+              }
+              disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
+                label="Mô tả dự án"
+                value={configs['PROJECT_DESCRIPTION'] || 'Metaverse & NFTs'}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PROJECT_DESCRIPTION: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={() =>
+                handleSave('PROJECT_DESCRIPTION', configs['PROJECT_DESCRIPTION'])
+              }
+              disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
                 label="Active Power tối thiểu (USDT)"
                 type="number"
                 value={configs['INVESTMENT_MIN_USDT'] || ''}
@@ -173,14 +221,6 @@ export function Settings() {
               Lưu
             </Button>
           </div>
-        </div>
-      </Card>
-
-      <Card title="Thông tin chung">
-        <div className="max-w-md space-y-4">
-          <Input label="Tên ứng dụng" placeholder="HeroGlob Admin" />
-          <Input label="Email hỗ trợ" type="email" placeholder="support@heroglob.com" />
-          <Button variant="primary">Lưu thay đổi</Button>
         </div>
       </Card>
     </div>
