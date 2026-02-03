@@ -26,7 +26,7 @@ export function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           </div>
           {!isCollapsed && (
             <span className="truncate font-bold text-zinc-900 dark:text-zinc-100">
-              HeroGlob
+              Hero Global
             </span>
           )}
         </div>

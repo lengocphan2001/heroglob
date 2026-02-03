@@ -6,7 +6,7 @@ type Props = {
 };
 
 export function VaultCard({
-  title = 'Aetheria Vault',
+  title = 'Hero Global Vault',
   subtitle = 'Biometric protection active',
 }: Props) {
   return (

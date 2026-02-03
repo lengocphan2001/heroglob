@@ -78,7 +78,7 @@ export function ProductForm() {
           ...list.map((c) => ({ id: c.slug, slug: c.slug, name: c.name })),
         ]),
       )
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   useEffect(() => {
@@ -158,7 +158,7 @@ export function ProductForm() {
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             required
-            placeholder="Aetheria Shard #042"
+            placeholder="Hero Global Shard #042"
           />
 
           <div>

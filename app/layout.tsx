@@ -14,8 +14,8 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Aetheria – Metaverse & NFTs",
-  description: "Khám phá metaverse và các NFT",
+  title: "Hero Global – Metaverse & NFTs",
+  description: "Khám phá metaverse và các sản phẩm NFT tại Hero Global",
 };
 
 export default function RootLayout({

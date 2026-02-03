@@ -305,7 +305,7 @@ export function Products() {
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             required
-            placeholder="Aetheria Shard #042"
+            placeholder="Hero Global Shard #042"
           />
 
           <div>

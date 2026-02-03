@@ -10,7 +10,7 @@ type Props = {
 };
 
 export function SiteHeader({
-  title = 'Aetheria',
+  title = 'Hero Global',
   connectLabel = 'Connect',
   onConnect,
 }: Props) {

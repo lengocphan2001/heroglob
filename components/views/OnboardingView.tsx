@@ -38,12 +38,12 @@ export default function OnboardingView() {
 
                 {/* Typography */}
                 <h1 className="text-3xl font-bold text-slate-800 mb-2 leading-tight">
-                    Tương lai của <br />
-                    <span className="text-emerald-500">Mua sắm Tạp hóa</span>
+                    Khám phá <br />
+                    <span className="text-emerald-500">Metaverse & NFTs</span>
                 </h1>
 
                 <p className="text-slate-500 text-sm leading-relaxed max-w-xs mx-auto mb-12">
-                    Mua sắm nhu yếu phẩm và gia tăng thu nhập thông qua mạng lưới phi tập trung.
+                    Tham gia hệ sinh thái Hero Global để sở hữu các tài sản số độc đáo và gia tăng thu nhập.
                 </p>
 
                 {/* Action */}
@@ -56,7 +56,7 @@ export default function OnboardingView() {
                         <div className="bg-slate-900/10 p-1.5 rounded-lg transition-colors group-hover:bg-slate-900/20">
                             <Wallet className="w-5 h-5 text-slate-900" />
                         </div>
-                        {isConnecting ? 'Đang kết nối...' : 'Kết nối Ví SafePal'}
+                        {isConnecting ? 'Đang kết nối...' : 'Kết nối Ví'}
                     </button>
 
                     <button className="flex items-center justify-center gap-1.5 text-xs text-slate-500 font-medium hover:text-emerald-600 transition-colors mx-auto">

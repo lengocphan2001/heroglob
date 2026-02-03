@@ -104,6 +104,9 @@ async function bootstrap() {
             { key: 'maintenance_mode', value: 'false' },
             { key: 'referral_commission_rate', value: '0.1' },
             { key: 'min_withdrawal_amount', value: '10' },
+            { key: 'PROJECT_NAME', value: 'Hero Global' },
+            { key: 'PROJECT_TOKEN_NAME', value: 'Hero Coin' },
+            { key: 'PROJECT_TOKEN_SYMBOL', value: 'HERO' },
         ];
 
         for (const cfg of configs) {

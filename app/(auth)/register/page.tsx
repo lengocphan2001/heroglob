@@ -83,7 +83,7 @@ function RegisterForm() {
                     <p className="text-slate-500">
                         {walletAddress
                             ? 'Nhập email, tên và mã giới thiệu (người mời) để hoàn tất đăng ký'
-                            : 'Tham gia Aetheria Metaverse ngay hôm nay'}
+                            : 'Tham gia Hero Global ngay hôm nay'}
                     </p>
                 </div>
 
