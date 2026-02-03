@@ -15,7 +15,7 @@ function buildUrl(path: string, params?: Record<string, string>): string {
 export async function api<T>(path: string, config: RequestConfig = {}): Promise<T> {
   const { params, ...init } = config;
   const url = buildUrl(path, params);
-  const token = Cookies.get('token');
+  const token = typeof window !== 'undefined' ? Cookies.get('token') : undefined;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

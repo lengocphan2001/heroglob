@@ -16,13 +16,14 @@ export async function getSystemConfig(): Promise<SystemConfig[]> {
     });
 }
 
-export async function getAppConfig(): Promise<{ projectName: string; tokenName: string; tokenSymbol: string; paymentReceiverAddress: string }> {
+export async function getAppConfig(): Promise<{ projectName: string; projectLogo: string; tokenName: string; tokenSymbol: string; paymentReceiverAddress: string }> {
     const list = await getSystemConfig();
     const projectName = list.find(c => c.key === 'PROJECT_NAME')?.value || 'Hero Global';
+    const projectLogo = list.find(c => c.key === 'PROJECT_LOGO')?.value || '';
     const tokenName = list.find(c => c.key === 'PROJECT_TOKEN_NAME')?.value || 'Hero Coin';
     const tokenSymbol = list.find(c => c.key === 'PROJECT_TOKEN_SYMBOL')?.value || 'HERO';
     const paymentReceiverAddress = list.find(c => c.key === 'PAYMENT_RECEIVER_ADDRESS')?.value || '';
-    return { projectName, tokenName, tokenSymbol, paymentReceiverAddress };
+    return { projectName, projectLogo, tokenName, tokenSymbol, paymentReceiverAddress };
 }
 
 /** @deprecated Use getAppConfig */

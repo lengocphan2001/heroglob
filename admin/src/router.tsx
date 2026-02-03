@@ -5,6 +5,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Login } from './pages/Login';
 import { Settings } from './pages/Settings';
 import { Users } from './pages/Users';
+import { UserDetail } from './pages/UserDetail';
 import { Products } from './pages/Products';
 import { ProductForm } from './pages/ProductForm';
 import { Payouts } from './pages/Payouts';
@@ -28,6 +29,7 @@ const router = createBrowserRouter([
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: <Dashboard /> },
       { path: 'users', element: <Users /> },
+      { path: 'users/:id', element: <UserDetail /> },
       { path: 'categories', element: <Categories /> },
       { path: 'products', element: <Products /> },
       { path: 'products/new', element: <ProductForm /> },

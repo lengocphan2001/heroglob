@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -46,5 +46,14 @@ export class OrdersController {
   @UseGuards(AuthGuard('jwt'))
   async getMyProducts(@Req() req: any) {
     return this.ordersService.getUserProducts(req.user.walletAddress);
+  }
+
+  @Get('user/:wallet')
+  @UseGuards(AuthGuard('jwt'))
+  async getByWallet(@Req() req: any, @Param('wallet') wallet: string) {
+    if (req.user?.role !== 'admin') {
+      return { error: 'Unauthorized' };
+    }
+    return this.ordersService.getUserProducts(wallet);
   }
 }

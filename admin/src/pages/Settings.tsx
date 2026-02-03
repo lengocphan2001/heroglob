@@ -4,10 +4,13 @@ import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { systemApi, type SystemConfig } from '../api/system';
+import { uploadProductImage } from '../api/products';
+import { ImagePlus } from 'lucide-react';
 
 export function Settings() {
   const [configs, setConfigs] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     fetchConfigs();
@@ -22,6 +25,23 @@ export function Settings() {
     } catch (error) {
       console.error('Failed to fetch configs', error);
       toast.error('Không thể tải cấu hình');
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+
+    setUploadingLogo(true);
+    try {
+      const url = await uploadProductImage(file);
+      await handleSave('PROJECT_LOGO', url);
+      setConfigs((prev) => ({ ...prev, PROJECT_LOGO: url }));
+    } catch (error: any) {
+      toast.error(error.message || 'Lỗi khi upload logo');
+    } finally {
+      setUploadingLogo(false);
+      e.target.value = '';
     }
   };
 
@@ -55,20 +75,71 @@ export function Settings() {
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <Input
-                label="Active Power tối thiểu (USDT)"
-                type="number"
-                value={configs['INVESTMENT_MIN_USDT'] || ''}
+                label="Tên Dự Án (Project Name)"
+                value={configs['PROJECT_NAME'] || 'Hero Global'}
                 onChange={(e) =>
-                  setConfigs({ ...configs, INVESTMENT_MIN_USDT: e.target.value })
+                  setConfigs({
+                    ...configs,
+                    PROJECT_NAME: e.target.value,
+                  })
                 }
               />
             </div>
             <Button
               variant="primary"
               onClick={() =>
-                handleSave('INVESTMENT_MIN_USDT', configs['INVESTMENT_MIN_USDT'])
+                handleSave('PROJECT_NAME', configs['PROJECT_NAME'])
               }
               disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-3">
+            <div className="flex-1">
+              <Input
+                label="Ảnh Logo / Icon Dự Án (URL)"
+                value={configs['PROJECT_LOGO'] || ''}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PROJECT_LOGO: e.target.value,
+                  })
+                }
+              />
+            </div>
+
+            <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-zinc-300 bg-zinc-50 transition-colors hover:border-indigo-400 dark:border-zinc-600 dark:bg-zinc-800">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingLogo}
+                onChange={handleLogoUpload}
+              />
+              {uploadingLogo ? (
+                <span className="text-[10px] text-zinc-500">...</span>
+              ) : (
+                <ImagePlus className="h-5 w-5 text-zinc-400" />
+              )}
+            </label>
+
+            {configs['PROJECT_LOGO'] && (
+              <img
+                src={configs['PROJECT_LOGO']}
+                alt="Logo Preview"
+                className="h-10 w-10 shrink-0 rounded-lg border border-zinc-200 object-contain dark:border-zinc-600"
+              />
+            )}
+
+            <Button
+              variant="primary"
+              onClick={() =>
+                handleSave('PROJECT_LOGO', configs['PROJECT_LOGO'])
+              }
+              disabled={loading}
+              className="shrink-0"
             >
               Lưu
             </Button>

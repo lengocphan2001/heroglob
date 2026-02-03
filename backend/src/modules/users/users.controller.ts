@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 
@@ -21,6 +21,30 @@ export class UsersController {
         return {
             heroBalance: Number(user.heroBalance),
             usdtBalance: Number(user.usdtBalance),
+        };
+    }
+
+    @Get(':id')
+    async findOne(@Param('id') id: string) {
+        const user = await this.usersService.findOne(Number(id));
+        if (!user) return null;
+
+        const referralCount = await this.usersService.countReferrals(user.id);
+        const referrals = await this.usersService.findAllReferrals(user.id);
+
+        let referrerData: any = null;
+        if (user.referredById) {
+            const r = await this.usersService.findOne(user.referredById);
+            if (r) {
+                referrerData = { id: r.id, name: r.name };
+            }
+        }
+
+        return {
+            ...user,
+            referralCount,
+            referrals,
+            referrer: referrerData,
         };
     }
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards, Param } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
 import { CommissionsService } from './commissions.service';
@@ -26,10 +26,17 @@ export class CommissionsController {
     async getAllCommissions(@Req() req: UserRequest) {
         // strict check for admin role
         if (req.user.role !== 'admin') {
-            // Just return empty or error for now, better to implement a RolesGuard later
-            // But for quick impl:
             return { error: 'Unauthorized' };
         }
         return this.commissionsService.findAll();
+    }
+
+    @Get('admin/user/:wallet')
+    @UseGuards(AuthGuard('jwt'))
+    async getByWallet(@Req() req: UserRequest, @Param('wallet') wallet: string) {
+        if (req.user.role !== 'admin') {
+            return { error: 'Unauthorized' };
+        }
+        return this.commissionsService.findByWallet(wallet);
     }
 }

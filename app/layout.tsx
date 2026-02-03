@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { ConfigProvider } from "@/contexts/ConfigContext";
 import { ReferralTracker } from "@/components/ReferralTracker";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import { Suspense } from "react";
 import "./globals.css";
 
@@ -13,10 +14,20 @@ const plusJakarta = Plus_Jakarta_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "Hero Global – Metaverse & NFTs",
-  description: "Khám phá metaverse và các sản phẩm NFT tại Hero Global",
-};
+import { getAppConfig } from "@/lib/api/system";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const config = await getAppConfig().catch(() => ({
+    projectName: 'Hero Global',
+    projectLogo: ''
+  }));
+
+  return {
+    title: `${config.projectName} – Metaverse & NFTs`,
+    description: `Khám phá metaverse và các sản phẩm NFT tại ${config.projectName}`,
+    icons: config.projectLogo ? [{ rel: 'icon', url: config.projectLogo }] : undefined,
+  };
+}
 
 export default function RootLayout({
   children,
@@ -32,7 +43,9 @@ export default function RootLayout({
               <Suspense fallback={null}>
                 <ReferralTracker />
               </Suspense>
-              {children}
+              <AuthGuard>
+                {children}
+              </AuthGuard>
             </WalletProvider>
           </ConfigProvider>
         </div>

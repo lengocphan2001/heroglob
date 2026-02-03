@@ -25,16 +25,10 @@ declare global {
 }
 
 type WalletState = {
-  address: string | null;
-  chainId: string | null;
+  address: null | string;
+  chainId: null | string;
   isConnecting: boolean;
-  error: string | null;
-};
-
-type WalletContextValue = WalletState & {
-  connect: () => Promise<void>;
-  disconnect: () => void;
-  isConnected: boolean;
+  error: null | string;
 };
 
 const defaultState: WalletState = {
@@ -42,6 +36,13 @@ const defaultState: WalletState = {
   chainId: null,
   isConnecting: false,
   error: null,
+};
+
+type WalletContextValue = WalletState & {
+  connect: () => Promise<void>;
+  disconnect: () => void;
+  isConnected: boolean;
+  isInitializing: boolean;
 };
 
 const WalletContext = createContext<WalletContextValue | null>(null);
@@ -72,6 +73,7 @@ async function ensureBsc(ethereum: NonNullable<Window['ethereum']>): Promise<voi
 export function WalletProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [state, setState] = useState<WalletState>(defaultState);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   const connect = useCallback(async () => {
     const ethereum = getEthereum();
@@ -147,6 +149,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           const refCode = getStoredRefCode();
           const { access_token } = await loginWallet(address, refCode);
           Cookies.set('token', access_token, { expires: 7 });
+
+          // Smoothly redirect to home if on onboarding or root
+          if (window.location.pathname === '/' || window.location.pathname === '/login') {
+            router.replace('/home');
+          }
         } catch (err: any) {
           console.error('Auto-login failed on restore:', err);
           if (err.message && (err.message.includes('not registered') || err.message.includes('Not Found'))) {
@@ -174,6 +181,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         setState((s) => ({ ...s, address, chainId }));
       } catch (e) {
         console.error('Error restoring wallet:', e);
+      } finally {
+        setIsInitializing(false);
       }
     };
 
@@ -233,8 +242,8 @@ export function WalletProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<WalletContextValue>(
-    () => ({ ...state, connect, disconnect, isConnected: !!state.address }),
-    [state, connect, disconnect],
+    () => ({ ...state, connect, disconnect, isConnected: !!state.address, isInitializing }),
+    [state, connect, disconnect, isInitializing],
   );
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;

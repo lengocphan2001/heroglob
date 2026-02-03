@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from './entities/user.entity';
+import { ReferralCode } from '../referrals/entities/referral-code.entity';
 
 const SALT_ROUNDS = 10;
 const SEED_EMAIL = 'admin@heroglob.com';
@@ -31,7 +32,30 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(ReferralCode)
+    private readonly codeRepo: Repository<ReferralCode>,
   ) { }
+
+  private async findReferrerId(code: string): Promise<number | null> {
+    const trimmed = code?.trim();
+    if (!trimmed) return null;
+
+    // 1. Try finding in Users table (referralCode column)
+    const upperCode = trimmed.toUpperCase();
+    const userByCode = await this.userRepo.findOne({ where: { referralCode: upperCode } });
+    if (userByCode) return userByCode.id;
+
+    // 2. Fallback: Try finding in ReferralCodes table
+    const codeRow = await this.codeRepo.findOne({ where: { code: trimmed } });
+    if (codeRow) {
+      const userByWallet = await this.userRepo.findOne({
+        where: { walletAddress: codeRow.walletAddress.toLowerCase() }
+      });
+      if (userByWallet) return userByWallet.id;
+    }
+
+    return null;
+  }
 
   async findByWalletAddress(walletAddress: string): Promise<User | null> {
     const normalized = walletAddress.trim().toLowerCase();
@@ -54,13 +78,7 @@ export class UsersService {
   ): Promise<User> {
     const normalized = walletAddress.trim().toLowerCase();
 
-    let referredById: number | null = null;
-    if (referrerCode) {
-      const referrer = await this.userRepo.findOne({ where: { referralCode: referrerCode.trim() } });
-      if (referrer) {
-        referredById = referrer.id;
-      }
-    }
+    const referredById = referrerCode ? await this.findReferrerId(referrerCode) : null;
 
     const displayName = (name && name.trim()) || `User ${normalized.slice(0, 6)}`;
     const emailVal = email && email.trim() ? email.trim().toLowerCase() : null;
@@ -84,13 +102,7 @@ export class UsersService {
     const existing = await this.userRepo.findOne({ where: { email: normalizedEmail } });
     if (existing) throw new Error('Email đã tồn tại');
 
-    let referredById: number | null = null;
-    if (data.referrerCode) {
-      const referrer = await this.userRepo.findOne({ where: { referralCode: data.referrerCode } });
-      if (referrer) {
-        referredById = referrer.id;
-      }
-    }
+    const referredById = data.referrerCode ? await this.findReferrerId(data.referrerCode) : null;
 
     const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS);
 
@@ -157,6 +169,13 @@ export class UsersService {
 
   async findAll() {
     return this.userRepo.find({
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findAllReferrals(userId: number) {
+    return this.userRepo.find({
+      where: { referredById: userId },
       order: { createdAt: 'DESC' },
     });
   }

@@ -22,3 +22,7 @@ export function updateOrderStatus(id: number, status: string): Promise<Order> {
     body: JSON.stringify({ id, status }),
   });
 }
+
+export function getUserOrders(wallet: string): Promise<any[]> {
+  return api<any[]>(`orders/user/${wallet}`);
+}

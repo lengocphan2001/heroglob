@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { LucideSearch, Plus, Filter, Pencil } from 'lucide-react';
+import { LucideSearch, Plus, Filter, Pencil, Eye } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import {
@@ -154,9 +155,16 @@ export function Users() {
                     {format(new Date(u.createdAt), 'dd/MM/yyyy HH:mm')}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(u)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Link to={`/users/${u.id}`}>
+                        <Button variant="ghost" size="icon" title="Chi tiết">
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button variant="ghost" size="icon" onClick={() => handleEdit(u)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import { Repository } from 'typeorm';
 import { ReferralCode } from './entities/referral-code.entity';
 import { Referral } from './entities/referral.entity';
+import { User } from '../users/entities/user.entity';
 
 function generateCode(): string {
   return randomBytes(5).toString('base64url').slice(0, 8).replace(/[-_]/g, 'x');
@@ -16,6 +17,8 @@ export class ReferralsService {
     private readonly codeRepo: Repository<ReferralCode>,
     @InjectRepository(Referral)
     private readonly referralRepo: Repository<Referral>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) { }
 
   private async ensureCode(code: string): Promise<string> {
@@ -32,8 +35,18 @@ export class ReferralsService {
 
   async getOrCreateCode(walletAddress: string): Promise<{ code: string }> {
     const normalized = walletAddress.trim().toLowerCase();
+
+    // 1. Check in users table first
+    const user = await this.userRepo.findOne({ where: { walletAddress: normalized } });
+    if (user && user.referralCode) {
+      return { code: user.referralCode };
+    }
+
+    // 2. Check in referral_codes table
     let row = await this.codeRepo.findOne({ where: { walletAddress: normalized } });
     if (row) return { code: row.code };
+
+    // 3. Create new if missing
     const code = await this.ensureCode(generateCode());
     row = this.codeRepo.create({ walletAddress: normalized, code });
     await this.codeRepo.save(row);
@@ -57,8 +70,19 @@ export class ReferralsService {
 
   async getStats(walletAddress: string): Promise<{ totalReferred: number }> {
     const wallet = walletAddress.trim().toLowerCase();
-    const totalReferred = await this.referralRepo.count({ where: { referrerWallet: wallet } });
-    return { totalReferred };
+
+    // 1. Count from User table (new system)
+    let userCount = 0;
+    const user = await this.userRepo.findOne({ where: { walletAddress: wallet } });
+    if (user) {
+      userCount = await this.userRepo.count({ where: { referredById: user.id } });
+    }
+
+    // 2. Count from Referral table (fallback/legacy)
+    const referralCount = await this.referralRepo.count({ where: { referrerWallet: wallet } });
+
+    // Return the larger one or combine them if needed, but usually userCount is more accurate now
+    return { totalReferred: Math.max(userCount, referralCount) };
   }
 
   async getCodeByWallet(walletAddress: string): Promise<string | null> {
