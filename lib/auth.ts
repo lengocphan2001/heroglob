@@ -17,6 +17,17 @@ export async function loginWallet(address: string, refCode?: string | null) {
     });
 }
 
+export async function registerWallet(
+    address: string,
+    refCode?: string,
+    options?: { name?: string; email?: string },
+) {
+    return api<LoginResponse>('auth/register-wallet', {
+        method: 'POST',
+        body: JSON.stringify({ address, refCode, name: options?.name, email: options?.email }),
+    });
+}
+
 export async function register(data: { email: string; password: string; name: string; refCode?: string }) {
     return api<LoginResponse>('auth/register', {
         method: 'POST',

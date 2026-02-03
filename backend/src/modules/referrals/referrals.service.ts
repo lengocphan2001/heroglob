@@ -41,6 +41,7 @@ export class ReferralsService {
   }
 
   async registerReferral(referredWallet: string, refCode: string): Promise<{ ok: boolean; message?: string }> {
+    if (!referredWallet || !refCode) return { ok: false, message: 'Dữ liệu không hợp lệ' };
     const referred = referredWallet.trim().toLowerCase();
     const code = refCode.trim();
     const codeRow = await this.codeRepo.findOne({ where: { code } });

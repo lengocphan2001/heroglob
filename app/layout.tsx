@@ -28,7 +28,12 @@ export default function RootLayout({
       <body className={`${plusJakarta.variable} antialiased h-full w-full flex justify-center bg-slate-100`}>
         <div className="w-full max-w-[480px] h-full bg-[var(--color-background)] shadow-[0_0_50px_-12px_rgb(0,0,0,0.25)] overflow-hidden relative font-sans">
           <ConfigProvider>
-            <WalletProvider>{children}</WalletProvider>
+            <WalletProvider>
+              <Suspense fallback={null}>
+                <ReferralTracker />
+              </Suspense>
+              {children}
+            </WalletProvider>
           </ConfigProvider>
         </div>
       </body>

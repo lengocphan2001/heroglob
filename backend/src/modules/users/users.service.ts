@@ -46,23 +46,31 @@ export class UsersService {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
 
-  async createWithWallet(walletAddress: string, referrerCode?: string): Promise<User> {
+  async createWithWallet(
+    walletAddress: string,
+    referrerCode?: string,
+    name?: string,
+    email?: string,
+  ): Promise<User> {
     const normalized = walletAddress.trim().toLowerCase();
 
     let referredById: number | null = null;
     if (referrerCode) {
-      const referrer = await this.userRepo.findOne({ where: { referralCode: referrerCode } });
+      const referrer = await this.userRepo.findOne({ where: { referralCode: referrerCode.trim() } });
       if (referrer) {
         referredById = referrer.id;
       }
     }
 
+    const displayName = (name && name.trim()) || `User ${normalized.slice(0, 6)}`;
+    const emailVal = email && email.trim() ? email.trim().toLowerCase() : null;
+
     const user = this.userRepo.create({
       walletAddress: normalized,
-      name: `User ${normalized.slice(0, 6)}`,
+      name: displayName,
       role: 'user',
       heroBalance: 0,
-      email: null,
+      email: emailVal,
       passwordHash: null,
       referralCode: this.generateReferralCode(),
       referredById,
@@ -103,6 +111,10 @@ export class UsersService {
 
   async countReferrals(userId: number): Promise<number> {
     return this.userRepo.count({ where: { referredById: userId } });
+  }
+
+  async countUsers(): Promise<number> {
+    return this.userRepo.count();
   }
 
   async onModuleInit() {

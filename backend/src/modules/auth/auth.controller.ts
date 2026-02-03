@@ -17,6 +17,23 @@ export class LoginWalletDto {
   refCode?: string;
 }
 
+export class RegisterWalletDto {
+  @IsString()
+  address!: string;
+
+  @IsString()
+  @IsOptional()
+  refCode?: string;
+
+  @IsString()
+  @IsOptional()
+  name?: string;
+
+  @IsString()
+  @IsOptional()
+  email?: string;
+}
+
 export class RegisterDto {
   @IsString()
   email!: string;
@@ -45,6 +62,11 @@ export class AuthController {
   @Post('login-wallet')
   async loginWallet(@Body() body: LoginWalletDto) {
     return this.authService.loginWallet(body.address, body.refCode);
+  }
+
+  @Post('register-wallet')
+  async registerWallet(@Body() body: RegisterWalletDto) {
+    return this.authService.registerWallet(body.address, body.refCode, body.name, body.email);
   }
 
   @Post('register')

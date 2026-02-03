@@ -9,6 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { useRouter } from 'next/navigation';
 import { BSC_CHAIN_ID, BSC_PARAMS } from '@/lib/wallet/tokens';
 import { loginWallet } from '@/lib/auth';
 import { getStoredRefCode } from '@/lib/api/referrals';
@@ -69,6 +70,7 @@ async function ensureBsc(ethereum: NonNullable<Window['ethereum']>): Promise<voi
 }
 
 export function WalletProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [state, setState] = useState<WalletState>(defaultState);
 
   const connect = useCallback(async () => {
@@ -98,14 +100,24 @@ export function WalletProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Auto login/register backend
+      // Check if wallet is registered: login → /home, else → /register with wallet
       try {
         const refCode = getStoredRefCode();
         const { access_token } = await loginWallet(address, refCode);
         Cookies.set('token', access_token, { expires: 7 });
-      } catch (err) {
+        setState({ address, chainId, isConnecting: false, error: null });
+        router.replace('/home');
+        return;
+      } catch (err: any) {
         console.error('Login failed:', err);
-        // We don't block wallet connection if login fails, but maybe show error?
+        const notRegistered =
+          err.message && (err.message.includes('not registered') || err.message.includes('Not Found'));
+        if (notRegistered) {
+          setState({ address, chainId, isConnecting: false, error: null });
+          router.replace(`/register?wallet=${encodeURIComponent(address)}`);
+          return;
+        }
+        // Other errors (e.g. network): keep address/chainId but show error
       }
 
       setState({ address, chainId, isConnecting: false, error: null });
@@ -113,7 +125,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       const message = err instanceof Error ? err.message : 'Kết nối thất bại';
       setState((s) => ({ ...s, address: null, chainId: null, isConnecting: false, error: message }));
     }
-  }, []);
+  }, [router]);
 
   const disconnect = useCallback(() => {
     setState(defaultState);
@@ -135,8 +147,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           const refCode = getStoredRefCode();
           const { access_token } = await loginWallet(address, refCode);
           Cookies.set('token', access_token, { expires: 7 });
-        } catch (err) {
+        } catch (err: any) {
           console.error('Auto-login failed on restore:', err);
+          if (err.message && (err.message.includes('not registered') || err.message.includes('Not Found'))) {
+            router.push(`/register?wallet=${address}`);
+          }
         }
 
         let chainId: string | null = null;
@@ -186,8 +201,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
           const refCode = getStoredRefCode();
           const { access_token } = await loginWallet(address, refCode);
           Cookies.set('token', access_token, { expires: 7 });
-        } catch (e) {
+        } catch (e: any) {
           console.error('Login on account change failed', e);
+          if (e.message && (e.message.includes('not registered') || e.message.includes('Not Found'))) {
+            router.push(`/register?wallet=${address}`);
+          }
         }
         setState((s) => ({ ...s, address }));
       } else {

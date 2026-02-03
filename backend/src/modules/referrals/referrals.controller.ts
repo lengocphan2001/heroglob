@@ -1,14 +1,20 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { ReferralsService } from './referrals.service';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 class RegisterDto {
+  @IsString()
+  @IsNotEmpty()
   walletAddress!: string;
+
+  @IsString()
+  @IsNotEmpty()
   refCode!: string;
 }
 
 @Controller('referrals')
 export class ReferralsController {
-  constructor(private readonly referralsService: ReferralsService) {}
+  constructor(private readonly referralsService: ReferralsService) { }
 
   @Get('code')
   getCode(@Query('walletAddress') walletAddress: string) {

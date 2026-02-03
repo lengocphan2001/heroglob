@@ -11,7 +11,7 @@ export type NavItem = {
 };
 
 const defaultItems: NavItem[] = [
-  { href: '/', label: 'Trang chủ', icon: Home },
+  { href: '/home', label: 'Trang chủ', icon: Home },
   { href: '/explore', label: 'Khám phá', icon: Compass },
   { href: '/active-power', label: 'Kích hoạt', icon: Zap },
   { href: '/wallet', label: 'Ví', icon: Wallet },
@@ -32,8 +32,7 @@ export function BottomNav({ items = defaultItems }: Props) {
     >
       <div className="mx-auto flex w-full items-center justify-around px-2">
         {items.map(({ href, label, icon: Icon }) => {
-          const isActive =
-            href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(href + '/');
+          const isActive = pathname === href || pathname.startsWith(href + '/');
           return (
             <Link
               key={href}

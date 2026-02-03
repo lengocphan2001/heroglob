@@ -29,7 +29,7 @@ export default function LoginPage() {
 
             // Login success
             Cookies.set('token', res.access_token, { expires: 7 });
-            router.push('/');
+            router.push('/home');
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Đăng nhập thất bại');
