@@ -7,13 +7,14 @@ export type SystemConfig = {
 };
 
 export async function getSystemConfig(): Promise<SystemConfig[]> {
-    return api<SystemConfig[]>('system-config', {
-        cache: 'no-store',
-        headers: {
-            'Pragma': 'no-cache',
-            'Cache-Control': 'no-cache'
-        }
-    });
+    try {
+        return await api<SystemConfig[]>('system-config', {
+            next: { revalidate: 60 }, // Revalidate every minute instead of no-store
+        });
+    } catch (e) {
+        console.error('getSystemConfig error:', e);
+        return [];
+    }
 }
 
 export async function getAppConfig(): Promise<{ projectName: string; projectDescription: string; tokenName: string; tokenSymbol: string; paymentReceiverAddress: string }> {

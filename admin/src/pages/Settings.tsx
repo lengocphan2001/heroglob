@@ -4,6 +4,8 @@ import { Card } from '../components/ui/Card';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { systemApi, type SystemConfig } from '../api/system';
+import { payoutsApi } from '../api/payouts';
+import { commissionsApi } from '../api/commissions';
 
 export function Settings() {
   const [configs, setConfigs] = useState<Record<string, string>>({});
@@ -220,6 +222,66 @@ export function Settings() {
             >
               Lưu
             </Button>
+          </div>
+        </div>
+      </Card>
+
+      <Card title="Cấu hình Payout & Hoa hồng">
+        <div className="space-y-4">
+          <div className="rounded-lg bg-amber-50 p-4 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              <strong>Lưu ý:</strong> Hệ thống tự động trả lãi vào lúc 00:00 mỗi ngày. Chỉ sử dụng các nút dưới đây nếu bạn muốn kích hoạt thủ công.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="p-4 border border-zinc-200 rounded-lg dark:border-zinc-800">
+              <h3 className="text-sm font-semibold mb-2">Trả lãi ROI thủ công</h3>
+              <p className="text-xs text-zinc-500 mb-4">Kích hoạt trả lãi ngày hôm nay cho tất cả các gói đầu tư đang hoạt động.</p>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (confirm('Bạn có chắc muốn chạy trả lãi thủ công ngay bây giờ?')) {
+                    try {
+                      setLoading(true);
+                      const res = await payoutsApi.runManualPayout();
+                      toast.success(res.message);
+                    } catch (e: any) {
+                      toast.error(e.message || 'Lỗi khi chạy payout');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }
+                }}
+                disabled={loading}
+              >
+                Chạy trả lãi (ROI)
+              </Button>
+            </div>
+
+            <div className="p-4 border border-zinc-200 rounded-lg dark:border-zinc-800">
+              <h3 className="text-sm font-semibold mb-2">Xử lý hoa hồng</h3>
+              <p className="text-xs text-zinc-500 mb-4">Cộng tiền hoa hồng từ các đơn hàng "Pending" vào số dư của các người giới thiệu.</p>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (confirm('Bạn có chắc muốn xử lý tất cả hoa hồng đang chờ?')) {
+                    try {
+                      setLoading(true);
+                      const res = await commissionsApi.process();
+                      toast.success(`Đã xử lý ${res.processed} hoa hồng, thất bại ${res.failed}`);
+                    } catch (e: any) {
+                      toast.error(e.message || 'Lỗi khi xử lý hoa hồng');
+                    } finally {
+                      setLoading(false);
+                    }
+                  }
+                }}
+                disabled={loading}
+              >
+                Xử lý hoa hồng
+              </Button>
+            </div>
           </div>
         </div>
       </Card>

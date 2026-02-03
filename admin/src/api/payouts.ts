@@ -16,4 +16,5 @@ export type Payout = {
 
 export const payoutsApi = {
     getAll: () => api<Payout[]>('/investments/payouts'),
+    runManualPayout: () => api<{ message: string }>('/investments/admin/run-payout', { method: 'POST' }),
 };
