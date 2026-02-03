@@ -6,8 +6,6 @@ import { User } from './entities/user.entity';
 import { ReferralCode } from '../referrals/entities/referral-code.entity';
 
 const SALT_ROUNDS = 10;
-const SEED_EMAIL = 'admin@heroglob.com';
-const SEED_PASSWORD = 'Admin@123';
 
 export type AdminUser = {
   id: string;
@@ -129,20 +127,6 @@ export class UsersService {
     return this.userRepo.count();
   }
 
-  async onModuleInit() {
-    const existing = await this.userRepo.findOne({
-      where: { email: SEED_EMAIL.toLowerCase() },
-    });
-    if (!existing) {
-      const hash = await bcrypt.hash(SEED_PASSWORD, SALT_ROUNDS);
-      await this.userRepo.insert({
-        email: SEED_EMAIL.toLowerCase(),
-        name: 'Admin',
-        role: 'admin',
-        passwordHash: hash,
-      });
-    }
-  }
 
   async findByEmail(email: string): Promise<AdminUser | undefined> {
     const normalized = email.trim().toLowerCase();
