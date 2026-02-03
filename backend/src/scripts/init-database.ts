@@ -21,6 +21,7 @@ import { Referral } from '../modules/referrals/entities/referral.entity';
 import { Commission } from '../modules/commissions/entities/commission.entity';
 import { SystemConfig } from '../modules/system-config/entities/system-config.entity';
 import { Withdrawal } from '../modules/withdrawals/entities/withdrawal.entity';
+import { ActivePowerPackage } from '../modules/active-power/entities/active-power-package.entity';
 
 async function bootstrap() {
     console.log('🚀 Starting database initialization...');
@@ -47,6 +48,7 @@ async function bootstrap() {
             Commission,
             SystemConfig,
             Withdrawal,
+            ActivePowerPackage,
         ],
         synchronize: false,
         logging: false,

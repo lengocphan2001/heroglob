@@ -212,6 +212,18 @@ CREATE TABLE commissions (
     FOREIGN KEY (from_user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Create active_power_packages table
+CREATE TABLE active_power_packages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(20, 2) NOT NULL,
+    daily_profit_percent DECIMAL(5, 2) NOT NULL,
+    duration_days INT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Create withdrawals table
 CREATE TABLE withdrawals (
     id INT AUTO_INCREMENT PRIMARY KEY,
