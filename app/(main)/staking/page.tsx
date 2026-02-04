@@ -81,12 +81,12 @@ export default function StakingPage() {
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
                                     <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Đã Stake</p>
                                     <p className="text-2xl font-bold text-slate-900">{totalStaked.toFixed(2)}</p>
-                                    <p className="text-xs text-slate-400 font-medium">HERO</p>
+                                    <p className="text-xs text-slate-400 font-medium">{tokenSymbol}</p>
                                 </div>
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
                                     <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Phần Thưởng</p>
                                     <p className="text-2xl font-bold text-[#330df2]">{totalRewards.toFixed(2)}</p>
-                                    <p className="text-xs text-slate-400 font-medium">HERO</p>
+                                    <p className="text-xs text-slate-400 font-medium">{tokenSymbol}</p>
                                 </div>
                             </div>
 

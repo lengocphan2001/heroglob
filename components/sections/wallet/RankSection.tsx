@@ -3,8 +3,10 @@
 import { useEffect, useState } from 'react';
 import { Crown, Users, TrendingUp } from 'lucide-react';
 import { getRankStats, type RankStats } from '@/lib/api/ranks';
+import { useConfig } from '@/contexts/ConfigContext';
 
 export function RankSection() {
+    const { tokenSymbol } = useConfig();
     const [stats, setStats] = useState<RankStats | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -102,7 +104,7 @@ export function RankSection() {
                         {stats.currentRank === 'legendary' ? 'Thưởng hiện tại' : 'Mục tiêu thưởng'}
                     </div>
                     <div className="text-xl font-bold text-slate-900">
-                        {nextReward} <span className="text-xs font-medium text-slate-500">HERO/ngày</span>
+                        {nextReward} <span className="text-xs font-medium text-slate-500">{tokenSymbol}/ngày</span>
                     </div>
                 </div>
             </div>

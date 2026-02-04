@@ -108,7 +108,7 @@ export default function ReferralsPage() {
                                 </div>
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
                                     <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Thu Nhập</p>
-                                    <p className="text-2xl font-bold text-[#330df2]">{stats?.totalEarnings || 0} HERO</p>
+                                    <p className="text-2xl font-bold text-[#330df2]">{stats?.totalEarnings || 0} {tokenSymbol}</p>
                                 </div>
                             </div>
 

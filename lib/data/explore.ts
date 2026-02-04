@@ -11,7 +11,7 @@ export const FEATURED_DROPS = [
     href: '/nft/1',
     imageUrl:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuAB_I3sCceDeWjFoe3L1pCgSIFbCQqxCzOUHX6vMJWeeNMKtWcM9lnS29CdJcMwKl6BKFkDQbXWIk_INr0ekZfCpgMQS5lhmW52ifZd_6iS2nuSpP4iOnp4gidlYYs6m0nqmqScwCf0YM17I0JyX13uV079nbyTDgLqOSRMtz7svdRjbuWet8fCcxN7rTzm73MRA3bsVQCv9QNdVJRswFMb_xn98Nw9WCdMILHDaxIfbgJqCjftU0v8iKS5vkKE_dyWxPIJfCoWHCM',
-    title: 'Hero Global Shard #042',
+    title: 'Project Shard #042',
     creatorAvatarUrl:
       'https://lh3.googleusercontent.com/aida-public/AB6AXuB1QGqhgkqnEiVg--j27wnzJrpcYV_B_dO-zrHj6MA1fPF6RIHE2Y_6K6mrL7GkooqRcgu7lj9GRkAWwQ9HJ3PVv6Qi-18m6a4A_3axaKzzY1H-BTkL1llmzviPc4vwKITzr3oBBEsIEN9fnU6ZgvBAq5GQPDuRGVJz9Q_HbWa0SM1-g8UfOFjuBGLXDnJpYPNQLm5UEhhZnKjDMjPjU1CEmgq5hMjGSAnXMcWH5HXLERPfAWhNteuUK2XuZ5qFZAnoJcNLqxFviHg',
     creatorHandle: 'nova',

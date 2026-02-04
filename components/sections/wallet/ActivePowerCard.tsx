@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Zap, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Modal, Button } from '@/components/ui';
+import { useConfig } from '@/contexts/ConfigContext';
 
 type Investment = {
     amount: string;
@@ -20,6 +21,7 @@ type Package = {
 };
 
 export function ActivePowerCard() {
+    const { projectName } = useConfig();
     const [invested, setInvested] = useState(0);
     const [loading, setLoading] = useState(false);
     const [packages, setPackages] = useState<Package[]>([]);
@@ -168,7 +170,7 @@ export function ActivePowerCard() {
                                 </div>
                                 <div className="flex items-center gap-2 text-xs text-amber-600 bg-amber-50 p-2 rounded-lg">
                                     <Info className="h-4 w-4 shrink-0" />
-                                    <p>Số tiền sẽ được trích từ ví HeroGlob của bạn. Hành động này không thể hoàn tác.</p>
+                                    <p>Số tiền sẽ được trích từ ví {projectName} của bạn. Hành động này không thể hoàn tác.</p>
                                 </div>
                                 <div className="flex gap-3 pt-2">
                                     <button

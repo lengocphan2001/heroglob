@@ -13,8 +13,10 @@ import { getProducts, type Product } from '@/lib/api/products';
 import { formatPriceDisplay } from '@/lib/formatPrice';
 import { ReferralSection } from '@/components/referral/ReferralSection';
 import { ActivePowerCard } from '@/components/sections/wallet';
+import { useConfig } from '@/contexts/ConfigContext';
 
 export default function DashboardView() {
+    const { tokenSymbol } = useConfig();
     const [search, setSearch] = useState('');
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ export default function DashboardView() {
         const usdt = parseFloat(p.priceUsdt ?? '0');
         const hero = parseFloat(p.priceHero ?? '0');
         if (usdt > 0) return `${formatPriceDisplay(p.priceUsdt)} USDT`;
-        if (hero > 0) return `${formatPriceDisplay(p.priceHero)} HERO`;
+        if (hero > 0) return `${formatPriceDisplay(p.priceHero)} ${tokenSymbol}`;
         return '—';
     };
 

@@ -19,7 +19,7 @@ import { getAppConfig } from "@/lib/api/system";
 
 export async function generateMetadata(): Promise<Metadata> {
   const config = await getAppConfig().catch(() => ({
-    projectName: 'Hero Global',
+    projectName: 'Project Name',
     projectLogo: ''
   }));
 

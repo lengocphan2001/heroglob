@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { createWithdrawal } from '@/lib/api/withdrawals';
 import { X } from 'lucide-react';
 import { toast } from 'sonner';
+import { useConfig } from '@/contexts/ConfigContext';
 
 type WithdrawModalProps = {
     isOpen: boolean;
@@ -53,8 +54,9 @@ export function WithdrawModal({ isOpen, onClose, tokenType, balance, onSuccess }
             setLoading(false);
         }
     };
+    const { tokenSymbol } = useConfig();
 
-    const tokenLabel = tokenType === 'usdt' ? 'USDT' : 'HERO';
+    const tokenLabel = tokenType === 'usdt' ? 'USDT' : tokenSymbol;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

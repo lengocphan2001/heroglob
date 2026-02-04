@@ -6,9 +6,11 @@ import { getTransactionHistory, type TransactionHistoryItem } from '@/lib/api/tr
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
 import { TrendingUp, Gift, Zap, ShoppingBag, Users, ArrowRight, Sparkles } from 'lucide-react';
+import { useConfig } from '@/contexts/ConfigContext';
 
 export function HistoryTab() {
     const router = useRouter();
+    const { tokenSymbol } = useConfig();
     const [transactions, setTransactions] = useState<TransactionHistoryItem[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -46,8 +48,8 @@ export function HistoryTab() {
 
     const getTokenLabel = (tokenType?: string) => {
         if (tokenType === 'usdt') return 'USDT';
-        if (tokenType === 'hero') return 'HERO';
-        return 'HERO';
+        if (tokenType === 'hero') return tokenSymbol;
+        return tokenSymbol;
     };
 
     if (loading) {

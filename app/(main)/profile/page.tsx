@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@/contexts/WalletContext';
 import { Copy, Share2, Wallet, Grid3x3, Users, DollarSign, Shield, Settings, ArrowLeft } from 'lucide-react';
+import { useConfig } from '@/contexts/ConfigContext';
 
 interface UserStats {
   heroBalance: number;
@@ -18,6 +19,7 @@ interface UserStats {
 export default function ProfilePage() {
   const router = useRouter();
   const { address, disconnect } = useWallet();
+  const { tokenSymbol } = useConfig();
   const [stats, setStats] = useState<UserStats>({
     heroBalance: 0,
     usdtBalance: 0,
@@ -138,7 +140,7 @@ export default function ProfilePage() {
           <div className="flex flex-[2_2_0px] flex-col gap-4">
             <div className="flex flex-col gap-1">
               <p className="text-white/80 text-xs font-medium uppercase tracking-wider">Thu Nhập Ví</p>
-              <p className="text-white text-3xl font-bold">{stats.heroBalance.toFixed(2)} HERO</p>
+              <p className="text-white text-3xl font-bold">{stats.heroBalance.toFixed(2)} {tokenSymbol}</p>
               <p className="text-white/80 text-sm font-medium">
                 {stats.ethBalance.toFixed(4)} ETH / ${stats.usdValue.toFixed(2)}
               </p>
@@ -200,7 +202,7 @@ export default function ProfilePage() {
               <DollarSign className="w-6 h-6" />
             </div>
             <p className="text-slate-900 text-base font-bold flex-1">Phần Thưởng Staking</p>
-            <span className="text-slate-500 text-sm font-medium">{stats.stakingRewards.toFixed(2)} HERO</span>
+            <span className="text-slate-500 text-sm font-medium">{stats.stakingRewards.toFixed(2)} {tokenSymbol}</span>
             <div className="shrink-0 text-slate-400 group-hover:translate-x-1 transition-transform">
               <ArrowLeft className="w-5 h-5 rotate-180" />
             </div>

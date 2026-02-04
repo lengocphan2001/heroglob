@@ -1,8 +1,11 @@
+import { useConfig } from '@/contexts/ConfigContext';
+
 export function Footer() {
+  const { projectName } = useConfig();
   return (
     <footer className="border-t border-zinc-200 bg-zinc-50 py-6 dark:border-zinc-800 dark:bg-zinc-950">
       <div className="mx-auto max-w-6xl px-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
-        © {new Date().getFullYear()} HeroGlob
+        © {new Date().getFullYear()} {projectName}
       </div>
     </footer>
   );

@@ -16,7 +16,7 @@ export function HeroBanner({
   imageUrl,
   badge = 'Live Now',
   title,
-  description = 'Join 12.4k explorers in the newest district.',
+  description = 'Khám phá các sản phẩm độc đáo trong dự án.',
   ctaLabel = 'Enter',
   ctaHref = '#',
   stats,
