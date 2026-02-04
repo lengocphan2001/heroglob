@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const dynamic = 'force-dynamic';
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { WalletProvider } from "@/contexts/WalletContext";
 import { ConfigProvider } from "@/contexts/ConfigContext";

@@ -19,6 +19,7 @@ export class SystemConfigService implements OnModuleInit {
             PROJECT_LOGO: '',
             PROJECT_TOKEN_NAME: 'Hero Coin',
             PROJECT_TOKEN_SYMBOL: 'HERO',
+            PROJECT_TOKEN_ADDRESS: '',
             PAYMENT_RECEIVER_ADDRESS: process.env.PAYMENT_RECEIVER_ADDRESS || '',
         };
 

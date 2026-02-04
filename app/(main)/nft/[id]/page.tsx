@@ -31,7 +31,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const slug = (params?.id as string) ?? '';
   const { isConnected, address, chainId } = useWallet();
-  const { tokenSymbol, paymentReceiverAddress } = useConfig();
+  const { tokenSymbol, tokenAddress, paymentReceiverAddress } = useConfig();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -143,6 +143,10 @@ export default function ProductDetailPage() {
       alert('Chưa cấu hình địa chỉ nhận thanh toán.');
       return;
     }
+    if (!tokenAddress) {
+      alert('Chưa cấu hình địa chỉ Contract Token dự án.');
+      return;
+    }
     const ethereum = getEthereum();
     if (!ethereum) {
       alert('Không tìm thấy ví.');
@@ -162,12 +166,12 @@ export default function ProductDetailPage() {
         try {
           const raw = toRawAmount(priceHero, 18);
 
-          await checkBalance(ethereum, address, HERO_TOKEN.address, raw);
+          await checkBalance(ethereum, address, tokenAddress, raw);
 
           const txHash = await sendTokenTransfer(
             ethereum,
             address,
-            HERO_TOKEN.address,
+            tokenAddress,
             paymentReceiverAddress,
             raw,
           );

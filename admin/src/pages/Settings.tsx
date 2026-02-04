@@ -212,9 +212,30 @@ export function Settings() {
             </div>
             <Button
               variant="primary"
-              onClick={() =>
-                handleSave('PROJECT_TOKEN_SYMBOL', configs['PROJECT_TOKEN_SYMBOL'])
-              }
+              onClick={() => handleSave('PROJECT_TOKEN_SYMBOL', configs['PROJECT_TOKEN_SYMBOL'])}
+              disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
+                label="Địa chỉ Contract Token"
+                value={configs['PROJECT_TOKEN_ADDRESS'] || ''}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PROJECT_TOKEN_ADDRESS: e.target.value,
+                  })
+                }
+                placeholder="0x..."
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={() => handleSave('PROJECT_TOKEN_ADDRESS', configs['PROJECT_TOKEN_ADDRESS'])}
               disabled={loading}
             >
               Lưu

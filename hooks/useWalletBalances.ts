@@ -10,6 +10,7 @@ import {
   formatNativeAmount,
 } from '@/lib/wallet/fetchBalances';
 import { getUsdtAddress, getNetworkLabel, getNativeSymbol, HERO_TOKEN } from '@/lib/wallet/tokens';
+import { useConfig } from '@/contexts/ConfigContext';
 
 export type WalletTokenItem = {
   id: string;
@@ -49,6 +50,7 @@ const USDT_META = {
 
 export function useWalletBalances(): WalletBalancesState {
   const { address, chainId, isConnected } = useWallet();
+  const { tokenName, tokenSymbol, tokenAddress } = useConfig();
   const [tokens, setTokens] = useState<WalletTokenItem[]>([]);
   const [totalBnb, setTotalBnb] = useState<string>('—');
   const [loading, setLoading] = useState(false);
@@ -78,8 +80,12 @@ export function useWalletBalances(): WalletBalancesState {
         usdtAddress
           ? fetchTokenDecimals(ethereum, usdtAddress).catch(() => 6)
           : Promise.resolve(6),
-        fetchTokenBalance(ethereum, HERO_TOKEN.address, address, 18).catch(() => 0n),
-        fetchTokenDecimals(ethereum, HERO_TOKEN.address).catch(() => 18),
+        tokenAddress
+          ? fetchTokenBalance(ethereum, tokenAddress, address, 18).catch(() => 0n)
+          : Promise.resolve(0n),
+        tokenAddress
+          ? fetchTokenDecimals(ethereum, tokenAddress).catch(() => 18)
+          : Promise.resolve(18),
       ]);
 
       const bnbFormatted = formatNativeAmount(nativeWei);
@@ -101,17 +107,19 @@ export function useWalletBalances(): WalletBalancesState {
         });
       }
 
-      list.push({
-        id: 'hero',
-        symbol: HERO_TOKEN.symbol,
-        name: HERO_TOKEN.name,
-        networkLabel,
-        amount: formatTokenAmount(heroRaw, heroDecimals),
-        raw: heroRaw,
-        decimals: heroDecimals,
-        changeType: 'neutral',
-        iconUrl: HERO_TOKEN.iconUrl,
-      });
+      if (tokenAddress) {
+        list.push({
+          id: 'hero',
+          symbol: tokenSymbol || HERO_TOKEN.symbol,
+          name: tokenName || HERO_TOKEN.name,
+          networkLabel,
+          amount: formatTokenAmount(heroRaw, heroDecimals),
+          raw: heroRaw,
+          decimals: heroDecimals,
+          changeType: 'neutral',
+          iconUrl: HERO_TOKEN.iconUrl,
+        });
+      }
 
       setTokens(list);
     } catch (err) {

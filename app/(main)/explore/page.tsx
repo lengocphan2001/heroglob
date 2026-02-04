@@ -30,7 +30,7 @@ function getExplorerTxUrl(chainId: string | null, txHash: string): string {
 
 export default function ExplorePage() {
   const { isConnected, address, chainId } = useWallet();
-  const { tokenSymbol, paymentReceiverAddress } = useConfig();
+  const { tokenSymbol, tokenAddress, paymentReceiverAddress } = useConfig();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [categories, setCategories] = useState<{ id: string; label: string }[]>([{ id: 'all', label: 'Tất cả' }]);
@@ -163,6 +163,10 @@ export default function ExplorePage() {
         alert('Chưa cấu hình địa chỉ nhận thanh toán.');
         return;
       }
+      if (!tokenAddress) {
+        alert('Chưa cấu hình địa chỉ Contract Token dự án.');
+        return;
+      }
       const ethereum = getEthereum();
       if (!ethereum) {
         alert('Không tìm thấy ví.');
@@ -182,12 +186,12 @@ export default function ExplorePage() {
           try {
             const raw = toRawAmount(priceHero, 18);
 
-            await checkBalance(ethereum, address, HERO_TOKEN.address, raw);
+            await checkBalance(ethereum, address, tokenAddress, raw);
 
             const txHash = await sendTokenTransfer(
               ethereum,
               address,
-              HERO_TOKEN.address,
+              tokenAddress,
               paymentReceiverAddress,
               raw,
             );
