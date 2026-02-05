@@ -31,6 +31,9 @@ export class TransactionsService {
     ) { }
 
     async getUserHistory(userId: number, walletAddress: string): Promise<TransactionHistoryItem[]> {
+        if (!userId || !walletAddress) {
+            return [];
+        }
         const transactions: TransactionHistoryItem[] = [];
 
         // Get user orders

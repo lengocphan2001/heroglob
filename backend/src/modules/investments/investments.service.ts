@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -6,6 +6,7 @@ import { Investment } from './entities/investment.entity';
 import { Payout } from './entities/payout.entity';
 import { SystemConfigService } from '../system-config/system-config.service';
 import { UsersService } from '../users/users.service';
+import { PayoutService } from '../payouts/payout.service';
 
 import { ActivePowerService } from '../active-power/active-power.service';
 
@@ -21,6 +22,8 @@ export class InvestmentsService {
         private configService: SystemConfigService,
         private usersService: UsersService,
         private activePowerService: ActivePowerService,
+        @Inject(forwardRef(() => PayoutService))
+        private readonly payoutService: PayoutService,
     ) { }
 
     async activatePower(userId: number, input: { amount?: number; packageId?: number }) {
@@ -70,7 +73,6 @@ export class InvestmentsService {
         return this.investmentRepository.find({ where: { userId } });
     }
 
-    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
     async handleDailyPayout() {
         this.logger.log('Starting daily payout calculation...');
 
@@ -82,7 +84,9 @@ export class InvestmentsService {
             const profit = Number(investment.amount) * (Number(investment.dailyProfitPercent) / 100);
 
             try {
-                await this.usersService.updateBalance(investment.userId, profit);
+                // Distribute profit with kickback via PayoutService
+                await this.payoutService.distributeRewardWithKickback(investment.userId, profit, 'investment_daily', investment.id);
+
                 investment.lastPayoutAt = new Date();
                 await this.investmentRepository.save(investment);
 

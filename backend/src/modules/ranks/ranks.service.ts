@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -6,6 +6,7 @@ import { User } from '../users/entities/user.entity';
 import { UsersService } from '../users/users.service';
 import { Payout } from '../investments/entities/payout.entity';
 import { Referral } from '../referrals/entities/referral.entity';
+import { PayoutService } from '../payouts/payout.service';
 
 @Injectable()
 export class RanksService {
@@ -19,9 +20,10 @@ export class RanksService {
         private readonly payoutRepo: Repository<Payout>,
         @InjectRepository(Referral)
         private readonly referralRepo: Repository<Referral>,
+        @Inject(forwardRef(() => PayoutService))
+        private readonly payoutService: PayoutService,
     ) { }
 
-    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
     async handleDailyRankRewards() {
         this.logger.log('Starting daily rank rewards...');
 
@@ -63,8 +65,8 @@ export class RanksService {
             // Distribute Daily Reward
             if (reward > 0) {
                 try {
-                    // This updates heroBalance
-                    await this.usersService.updateBalance(user.id, reward);
+                    // This handles heroBalance and referral kickback
+                    await this.payoutService.distributeRewardWithKickback(user.id, reward, 'rank_daily');
 
                     await this.payoutRepo.save({
                         userId: user.id,

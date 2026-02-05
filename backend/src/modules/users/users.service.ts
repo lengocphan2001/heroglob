@@ -10,6 +10,7 @@ const SALT_ROUNDS = 10;
 export type AdminUser = {
   id: string;
   email: string | null;
+  walletAddress: string | null;
   name: string;
   role: string;
   passwordHash: string | null;
@@ -19,6 +20,7 @@ function toAdminUser(entity: User): AdminUser {
   return {
     id: String(entity.id),
     email: entity.email,
+    walletAddress: entity.walletAddress,
     name: entity.name,
     role: entity.role,
     passwordHash: entity.passwordHash,

@@ -21,6 +21,8 @@ export class SystemConfigService implements OnModuleInit {
             PROJECT_TOKEN_SYMBOL: 'HERO',
             PROJECT_TOKEN_ADDRESS: '',
             PAYMENT_RECEIVER_ADDRESS: process.env.PAYMENT_RECEIVER_ADDRESS || '',
+            PAYOUT_MODE: 'on-chain', // 'internal' or 'on-chain'
+            PAYOUT_CRON: '0 0 0 * * *', // Default: midnight
         };
 
         for (const [key, value] of Object.entries(defaults)) {

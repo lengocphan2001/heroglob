@@ -19,6 +19,7 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { NFTsModule } from './modules/nfts/nfts.module';
 import { WithdrawalsModule } from './modules/withdrawals/withdrawals.module';
 import { ActivePowerModule } from './modules/active-power/active-power.module';
+import { PayoutModule } from './modules/payouts/payout.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { ActivePowerModule } from './modules/active-power/active-power.module';
     NFTsModule,
     WithdrawalsModule,
     ActivePowerModule,
+    PayoutModule,
   ],
   controllers: [AppController],
   providers: [AppService],

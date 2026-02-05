@@ -8,6 +8,7 @@ import { AuthService } from '../auth.service';
 export type JwtUser = {
   id: string;
   email: string;
+  walletAddress: string | null;
   name: string;
   role: string;
 };

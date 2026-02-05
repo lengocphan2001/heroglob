@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, LessThan } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
@@ -6,6 +6,7 @@ import { NFT } from './entities/nft.entity';
 import { NFTReward } from './entities/nft-reward.entity';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
+import { PayoutService } from '../payouts/payout.service';
 
 @Injectable()
 export class NFTRewardsService {
@@ -20,10 +21,11 @@ export class NFTRewardsService {
         private productRepo: Repository<Product>,
         @InjectRepository(User)
         private userRepo: Repository<User>,
+        @Inject(forwardRef(() => PayoutService))
+        private readonly payoutService: PayoutService,
     ) { }
 
     // Run daily at midnight
-    @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
     async distributeDailyRewards() {
         this.logger.log('Starting daily NFT rewards distribution...');
 
@@ -97,16 +99,8 @@ export class NFTRewardsService {
 
                     await this.rewardRepo.save(reward);
 
-                    // Update user's HERO balance
-                    const user = await this.userRepo.findOne({
-                        where: { id: nft.userId },
-                    });
-
-                    if (user) {
-                        const currentBalance = Number(user.heroBalance || 0);
-                        user.heroBalance = currentBalance + rewardAmount;
-                        await this.userRepo.save(user);
-                    }
+                    // Distribute reward with kickback via PayoutService
+                    await this.payoutService.distributeRewardWithKickback(nft.userId, rewardAmount, 'nft_reward');
 
                     rewardsDistributed++;
                 } catch (error) {

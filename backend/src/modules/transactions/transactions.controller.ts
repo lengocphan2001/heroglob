@@ -10,6 +10,6 @@ export class TransactionsController {
     @Get('history')
     async getHistory(@Req() req) {
         const user = req.user;
-        return this.transactionsService.getUserHistory(user.id, user.walletAddress);
+        return this.transactionsService.getUserHistory(Number(user.id), user.walletAddress);
     }
 }
