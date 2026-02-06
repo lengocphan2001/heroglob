@@ -6,7 +6,7 @@ import { Investment } from './entities/investment.entity';
 import { Payout } from './entities/payout.entity';
 import { SystemConfigService } from '../system-config/system-config.service';
 import { UsersService } from '../users/users.service';
-import { PayoutService } from '../payouts/payout.service';
+import { PayoutService, PendingReward } from '../payouts/payout.service';
 
 import { ActivePowerService } from '../active-power/active-power.service';
 
@@ -73,35 +73,61 @@ export class InvestmentsService {
         return this.investmentRepository.find({ where: { userId } });
     }
 
-    async handleDailyPayout() {
-        this.logger.log('Starting daily payout calculation...');
-
+    async getPendingInvestmentPayouts(): Promise<PendingReward[]> {
         const activeInvestments = await this.investmentRepository.find({
             where: { status: 'active' },
+            relations: ['user'],
         });
 
+        const pending: PendingReward[] = [];
         for (const investment of activeInvestments) {
             const profit = Number(investment.amount) * (Number(investment.dailyProfitPercent) / 100);
-
-            try {
-                // Distribute profit with kickback via PayoutService
-                await this.payoutService.distributeRewardWithKickback(investment.userId, profit, 'investment_daily', investment.id);
-
-                investment.lastPayoutAt = new Date();
-                await this.investmentRepository.save(investment);
-
-                await this.payoutRepository.save({
+            if (profit > 0) {
+                pending.push({
                     userId: investment.userId,
-                    investmentId: investment.id,
+                    userName: investment.user?.name,
+                    wallet: investment.user?.walletAddress || undefined,
                     amount: profit,
+                    type: 'investment_daily',
+                    investmentId: investment.id,
                 });
-
-                this.logger.log(`Payout ${profit} to user ${investment.userId}`);
-            } catch (e) {
-                this.logger.error(`Failed payout for investment ${investment.id}`, e);
             }
         }
+        return pending;
+    }
+
+    async handleDailyPayout() {
+        this.logger.log('Starting daily payout calculation...');
+        const pending = await this.getPendingInvestmentPayouts();
+
+        for (const item of pending) {
+            await this.payoutSingleInvestment(item);
+        }
         this.logger.log('Daily payout completed.');
+    }
+
+    async payoutSingleInvestment(item: PendingReward) {
+        try {
+            if (!item.investmentId) return;
+            // Distribute profit with kickback via PayoutService
+            await this.payoutService.distributeRewardWithKickback(item.userId, item.amount, 'investment_daily', item.investmentId);
+
+            const investment = await this.investmentRepository.findOne({ where: { id: item.investmentId } });
+            if (investment) {
+                investment.lastPayoutAt = new Date();
+                await this.investmentRepository.save(investment);
+            }
+
+            await this.payoutRepository.save({
+                userId: item.userId,
+                investmentId: item.investmentId,
+                amount: item.amount,
+            });
+
+            this.logger.log(`Payout ${item.amount} to user ${item.userId}`);
+        } catch (e) {
+            this.logger.error(`Failed payout for investment ${item.investmentId}`, e);
+        }
     }
 
     async getAllPayouts() {

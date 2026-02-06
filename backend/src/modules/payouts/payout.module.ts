@@ -1,5 +1,6 @@
 import { forwardRef, Module } from '@nestjs/common';
 import { PayoutService } from './payout.service';
+import { PayoutController } from './payout.controller';
 import { PayoutScheduler } from './payout.scheduler';
 import { RanksModule } from '../ranks/ranks.module';
 import { InvestmentsModule } from '../investments/investments.module';
@@ -20,6 +21,7 @@ import { User } from '../users/entities/user.entity';
         SystemConfigModule,
         UsersModule,
     ],
+    controllers: [PayoutController],
     providers: [PayoutService, PayoutScheduler],
     exports: [PayoutService],
 })

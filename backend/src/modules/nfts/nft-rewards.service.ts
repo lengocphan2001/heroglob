@@ -6,7 +6,7 @@ import { NFT } from './entities/nft.entity';
 import { NFTReward } from './entities/nft-reward.entity';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
-import { PayoutService } from '../payouts/payout.service';
+import { PayoutService, PendingReward } from '../payouts/payout.service';
 
 @Injectable()
 export class NFTRewardsService {
@@ -26,93 +26,89 @@ export class NFTRewardsService {
     ) { }
 
     // Run daily at midnight
-    async distributeDailyRewards() {
-        this.logger.log('Starting daily NFT rewards distribution...');
+    async getPendingNFTRewards(): Promise<PendingReward[]> {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-        try {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+        const nfts = await this.nftRepo.find({ relations: ['user'] });
+        const pending: PendingReward[] = [];
 
-            // Get all NFTs
-            const nfts = await this.nftRepo.find();
-            this.logger.log(`Found ${nfts.length} NFTs to process`);
+        for (const nft of nfts) {
+            const product = await this.productRepo.findOne({
+                where: { id: nft.productId },
+            });
 
-            let rewardsDistributed = 0;
+            if (!product || Number(product.dailyHeroReward) <= 0) continue;
 
-            for (const nft of nfts) {
-                try {
-                    // Get product details
-                    const product = await this.productRepo.findOne({
-                        where: { id: nft.productId },
-                    });
+            const existingReward = await this.rewardRepo.findOne({
+                where: { nftId: nft.id, rewardDate: today },
+            });
 
-                    if (!product || Number(product.dailyHeroReward) <= 0) {
-                        continue;
-                    }
+            if (existingReward) continue;
 
-                    // Check if reward already distributed today
-                    const existingReward = await this.rewardRepo.findOne({
-                        where: {
-                            nftId: nft.id,
-                            rewardDate: today,
-                        },
-                    });
+            const rewards = await this.rewardRepo.find({ where: { nftId: nft.id } });
+            const totalEarned = rewards.reduce((sum, r) => sum + Number(r.rewardAmount), 0);
 
-                    if (existingReward) {
-                        continue;
-                    }
+            const maxReward = Number(product.maxHeroReward);
+            if (maxReward > 0 && totalEarned >= maxReward) continue;
 
-                    // Calculate total earned for this NFT
-                    const rewards = await this.rewardRepo.find({
-                        where: { nftId: nft.id },
-                    });
-
-                    const totalEarned = rewards.reduce(
-                        (sum, r) => sum + Number(r.rewardAmount),
-                        0
-                    );
-
-                    // Check if max reward reached
-                    const maxReward = Number(product.maxHeroReward);
-                    if (maxReward > 0 && totalEarned >= maxReward) {
-                        this.logger.log(
-                            `NFT ${nft.id} has reached max reward (${maxReward} HERO)`
-                        );
-                        continue;
-                    }
-
-                    // Calculate reward amount (don't exceed max)
-                    let rewardAmount = Number(product.dailyHeroReward);
-                    if (maxReward > 0 && totalEarned + rewardAmount > maxReward) {
-                        rewardAmount = maxReward - totalEarned;
-                    }
-
-                    // Create reward record
-                    const reward = this.rewardRepo.create({
-                        nftId: nft.id,
-                        userId: nft.userId,
-                        productId: nft.productId,
-                        rewardAmount: rewardAmount.toFixed(6),
-                        totalEarned: (totalEarned + rewardAmount).toFixed(6),
-                        rewardDate: today,
-                    });
-
-                    await this.rewardRepo.save(reward);
-
-                    // Distribute reward with kickback via PayoutService
-                    await this.payoutService.distributeRewardWithKickback(nft.userId, rewardAmount, 'nft_reward');
-
-                    rewardsDistributed++;
-                } catch (error) {
-                    this.logger.error(`Error processing NFT ${nft.id}:`, error);
-                }
+            let rewardAmount = Number(product.dailyHeroReward);
+            if (maxReward > 0 && totalEarned + rewardAmount > maxReward) {
+                rewardAmount = maxReward - totalEarned;
             }
 
-            this.logger.log(
-                `Daily rewards distribution completed. ${rewardsDistributed} rewards distributed.`
-            );
+            pending.push({
+                userId: nft.userId,
+                userName: nft.user?.name,
+                wallet: nft.user?.walletAddress || undefined,
+                amount: rewardAmount,
+                type: 'nft_reward',
+                nftId: nft.id,
+                metadata: { productId: nft.productId }
+            });
+        }
+        return pending;
+    }
+
+    async distributeDailyRewards() {
+        this.logger.log('Starting daily NFT rewards distribution...');
+        const pending = await this.getPendingNFTRewards();
+
+        let rewardsDistributed = 0;
+        for (const item of pending) {
+            const success = await this.payoutSingleNFTReward(item);
+            if (success) rewardsDistributed++;
+        }
+
+        this.logger.log(`Daily rewards distribution completed. ${rewardsDistributed} rewards distributed.`);
+    }
+
+    async payoutSingleNFTReward(item: PendingReward): Promise<boolean> {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        try {
+            if (!item.nftId) return false;
+            // Calculate total earned again to be safe in concurrent scenarios if needed, 
+            // but for simple cron it's fine.
+            const rewards = await this.rewardRepo.find({ where: { nftId: item.nftId } });
+            const totalEarned = rewards.reduce((sum, r) => sum + Number(r.rewardAmount), 0);
+
+            const reward = this.rewardRepo.create({
+                nftId: item.nftId,
+                userId: item.userId,
+                productId: item.metadata.productId,
+                rewardAmount: item.amount.toFixed(6),
+                totalEarned: (totalEarned + item.amount).toFixed(6),
+                rewardDate: today,
+            });
+
+            await this.rewardRepo.save(reward);
+            await this.payoutService.distributeRewardWithKickback(item.userId, item.amount, 'nft_reward');
+            return true;
         } catch (error) {
-            this.logger.error('Error in daily rewards distribution:', error);
+            this.logger.error(`Error processing NFT ${item.nftId}:`, error);
+            return false;
         }
     }
 

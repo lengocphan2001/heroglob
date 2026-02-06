@@ -5,12 +5,19 @@ import {
     Index,
     PrimaryGeneratedColumn,
     UpdateDateColumn,
+    ManyToOne,
+    JoinColumn,
 } from 'typeorm';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('nfts')
 export class NFT {
     @PrimaryGeneratedColumn()
     id!: number;
+
+    @ManyToOne(() => User)
+    @JoinColumn({ name: 'user_id' })
+    user!: User;
 
     @Column({ type: 'int', name: 'user_id' })
     @Index()

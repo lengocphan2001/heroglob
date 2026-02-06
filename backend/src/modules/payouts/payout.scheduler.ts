@@ -22,7 +22,8 @@ export class PayoutScheduler implements OnModuleInit {
     async setupCronJob() {
         try {
             const cronExpression = await this.configService.get('PAYOUT_CRON', '0 0 0 * * *');
-            this.logger.log(`Setting up daily payout job with schedule: ${cronExpression}`);
+            const timezone = await this.configService.get('PAYOUT_TIMEZONE', 'Asia/Ho_Chi_Minh');
+            this.logger.log(`Setting up daily payout job with schedule: ${cronExpression} in ${timezone}`);
 
             // Remove existing job if it exists (for refresh support)
             const exists = this.schedulerRegistry.getCronJobs().has(this.JOB_NAME);
@@ -30,12 +31,18 @@ export class PayoutScheduler implements OnModuleInit {
                 this.schedulerRegistry.deleteCronJob(this.JOB_NAME);
             }
 
-            const job = new CronJob(cronExpression, () => {
-                this.handlePayout();
-            });
+            const job = new CronJob(
+                cronExpression,
+                () => {
+                    this.handlePayout();
+                },
+                null,
+                true,
+                timezone
+            );
 
             this.schedulerRegistry.addCronJob(this.JOB_NAME, job);
-            job.start();
+            // job.start(); // CronJob constructor with 'true' as 4th arg already starts it
         } catch (error) {
             this.logger.error('Failed to setup dynamic payout cron job:', error);
         }

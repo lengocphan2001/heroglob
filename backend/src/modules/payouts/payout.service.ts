@@ -11,6 +11,17 @@ import { Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { Payout } from '../investments/entities/payout.entity';
 
+export interface PendingReward {
+    userId: number;
+    userName?: string;
+    wallet?: string;
+    amount: number;
+    type: string;
+    investmentId?: number | null;
+    nftId?: number | null;
+    metadata?: any;
+}
+
 @Injectable()
 export class PayoutService {
     private readonly logger = new Logger(PayoutService.name);
@@ -63,11 +74,27 @@ export class PayoutService {
         }
     }
 
-    async processDailyPayouts() {
-        this.logger.log('Starting consolidated daily payouts...');
+    async getPendingPayouts(): Promise<PendingReward[]> {
+        const [rankRewards, investmentPayouts, nftRewards] = await Promise.all([
+            this.ranksService.getPendingRankRewards(),
+            this.investmentsService.getPendingInvestmentPayouts(),
+            this.nftRewardsService.getPendingNFTRewards(),
+        ]);
+
+        return [...rankRewards, ...investmentPayouts, ...nftRewards];
+    }
+
+    async processDailyPayouts(selectedRewards?: PendingReward[]) {
+        this.logger.log('Starting daily payouts processing...');
 
         const mode = await this.configService.get('PAYOUT_MODE', 'on-chain');
         this.logger.log(`Payout Mode: ${mode}`);
+
+        if (selectedRewards) {
+            this.logger.log(`Processing ${selectedRewards.length} selected rewards...`);
+            await this.processSelectedPayouts(selectedRewards);
+            return;
+        }
 
         if (mode === 'internal') {
             await this.processInternalPayouts();
@@ -75,6 +102,26 @@ export class PayoutService {
             await this.processOnChainPayouts();
         } else {
             this.logger.error(`Unknown payout mode: ${mode}`);
+        }
+    }
+
+    private async processSelectedPayouts(selectedRewards: PendingReward[]) {
+        for (const item of selectedRewards) {
+            try {
+                if (item.type === 'rank_daily') {
+                    // Logic for rank payout (we might need to expose a single item processor in RanksService)
+                    // For now, let's just use distributeRewardWithKickback if appropriate, 
+                    // but RanksService also updates the rank itself.
+                    // I should probably add individual payout methods to the services.
+                    await this.ranksService.payoutSingleRankReward(item);
+                } else if (item.type === 'investment_daily') {
+                    await this.investmentsService.payoutSingleInvestment(item);
+                } else if (item.type === 'nft_reward') {
+                    await this.nftRewardsService.payoutSingleNFTReward(item);
+                }
+            } catch (error) {
+                this.logger.error(`Failed to process selected payout for user ${item.userId} (${item.type}):`, error);
+            }
         }
     }
 
