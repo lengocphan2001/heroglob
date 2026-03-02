@@ -126,9 +126,9 @@ PORT=4001
 DB_HOST=localhost
 DB_PORT=3306
 DB_USERNAME=heroglob_user
-DB_PASSWORD=your_strong_password
+DB_PASSWORD=password
 DB_DATABASE=heroglob
-DB_SYNCHRONIZE=true
+DB_SYNCHRONIZE=false
 DB_LOGGING=false
 
 # JWT
@@ -589,7 +589,7 @@ DB_PORT=3306
 DB_USERNAME=heroglob_user1
 DB_PASSWORD=password
 DB_DATABASE=heroglob1
-DB_SYNCHRONIZE=true
+DB_SYNCHRONIZE=false
 DB_LOGGING=false
 
 # JWT
