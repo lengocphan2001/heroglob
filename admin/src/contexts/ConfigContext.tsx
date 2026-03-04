@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
 import { systemApi } from '../api/system';
 
 type TokenConfig = {
@@ -24,7 +25,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         const tokenSymbol = list.find((c) => c.key === 'PROJECT_TOKEN_SYMBOL')?.value ?? defaultToken.tokenSymbol;
         setConfig({ tokenName, tokenSymbol });
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   return <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>;
