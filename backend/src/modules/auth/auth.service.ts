@@ -75,6 +75,11 @@ export class AuthService {
     }
 
     const user = await this.usersService.createWithWallet(address, refCode, name, email);
+    // Record in referrals table so referrer's list/stats stay in sync (code lookup is case-insensitive via referral_codes)
+    if (refCode?.trim()) {
+      const codeNormalized = refCode.trim().toUpperCase();
+      await this.referralsService.registerReferral(address, codeNormalized).catch(() => {});
+    }
     const payload: JwtPayload = { sub: String(user.id), email: user.email ?? '' };
     const access_token = this.jwtService.sign(payload);
     return {

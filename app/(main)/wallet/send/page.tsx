@@ -7,7 +7,7 @@ export default function WalletSendPage() {
   const router = useRouter();
 
   return (
-    <div className="relative mx-auto flex min-h-screen max-w-md flex-col bg-white dark:bg-[var(--color-background-dark)]">
+    <div className="relative mx-auto flex min-h-full max-w-md flex-col bg-white dark:bg-[var(--color-background-dark)]">
       <div className="sticky top-0 z-10 glass-light px-6 py-4">
         <div className="flex items-center gap-4">
           <button

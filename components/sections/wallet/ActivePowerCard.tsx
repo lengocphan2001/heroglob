@@ -108,7 +108,7 @@ export function ActivePowerCard() {
         setActivateStep('processing');
         try {
             const raw = toRawAmount(amountStr, getUsdtDecimals(chainId));
-            await checkBalance(ethereum, address, usdtAddress, raw);
+            await checkBalance(ethereum, address, usdtAddress, raw, { tokenLabel: 'USDT', decimals: getUsdtDecimals(chainId) });
             const txHash = await sendTokenTransfer(
                 ethereum,
                 address,

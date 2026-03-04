@@ -29,7 +29,13 @@ export class ReferralsController {
 
   @Get('stats')
   getStats(@Query('walletAddress') walletAddress: string) {
-    if (!walletAddress?.trim()) return { totalReferred: 0 };
+    if (!walletAddress?.trim()) return { totalReferrals: 0, totalEarnings: 0 };
     return this.referralsService.getStats(walletAddress);
+  }
+
+  @Get()
+  getList(@Query('walletAddress') walletAddress: string) {
+    if (!walletAddress?.trim()) return [];
+    return this.referralsService.getList(walletAddress);
   }
 }

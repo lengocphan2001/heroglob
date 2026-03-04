@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 export default function WalletBuyPage() {
   const router = useRouter();
   return (
-    <div className="relative mx-auto flex min-h-screen max-w-md flex-col bg-white dark:bg-[var(--color-background-dark)]">
+    <div className="relative mx-auto flex min-h-full max-w-md flex-col bg-white dark:bg-[var(--color-background-dark)]">
       <div className="sticky top-0 z-10 glass-light px-6 py-4">
         <div className="flex items-center gap-4">
           <button type="button" onClick={() => router.back()} className="flex items-center justify-center rounded-full p-2 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-slate-200" aria-label="Quay lại">

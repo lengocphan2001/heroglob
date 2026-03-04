@@ -116,7 +116,7 @@ export default function ExplorePage() {
           try {
             const raw = toRawAmount(priceUsdt, getUsdtDecimals(chainId));
 
-            await checkBalance(ethereum, address, usdtAddress, raw);
+            await checkBalance(ethereum, address, usdtAddress, raw, { tokenLabel: 'USDT', decimals: getUsdtDecimals(chainId) });
 
             const txHash = await sendTokenTransfer(
               ethereum,

@@ -44,6 +44,12 @@ export class UsersService {
     return this.findByWalletAddress(walletAddress);
   }
 
+  async findByReferralCode(code: string): Promise<User | null> {
+    if (!code?.trim()) return null;
+    const normalized = code.trim().toUpperCase();
+    return this.userRepo.findOne({ where: { referralCode: normalized } });
+  }
+
   /**
    * Find user by wallet, or create one with minimal info (e.g. when order is placed before registration).
    * Used so product-order payouts can always be scheduled.
@@ -67,8 +73,9 @@ export class UsersService {
     const normalized = walletAddress.trim().toLowerCase();
 
     let referredById: number | null = null;
-    if (referrerCode) {
-      const referrer = await this.userRepo.findOne({ where: { referralCode: referrerCode.trim() } });
+    if (referrerCode?.trim()) {
+      const codeNormalized = referrerCode.trim().toUpperCase();
+      const referrer = await this.userRepo.findOne({ where: { referralCode: codeNormalized } });
       if (referrer) {
         referredById = referrer.id;
       }
@@ -97,8 +104,9 @@ export class UsersService {
     if (existing) throw new Error('Email đã tồn tại');
 
     let referredById: number | null = null;
-    if (data.referrerCode) {
-      const referrer = await this.userRepo.findOne({ where: { referralCode: data.referrerCode } });
+    if (data.referrerCode?.trim()) {
+      const codeNormalized = data.referrerCode.trim().toUpperCase();
+      const referrer = await this.userRepo.findOne({ where: { referralCode: codeNormalized } });
       if (referrer) {
         referredById = referrer.id;
       }
@@ -123,6 +131,14 @@ export class UsersService {
 
   async countReferrals(userId: number): Promise<number> {
     return this.userRepo.count({ where: { referredById: userId } });
+  }
+
+  /** Users referred by this user (referred_by_id = userId). */
+  async findReferredByUserId(referrerId: number): Promise<User[]> {
+    return this.userRepo.find({
+      where: { referredById: referrerId },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   async countUsers(): Promise<number> {

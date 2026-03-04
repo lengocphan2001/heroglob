@@ -21,12 +21,14 @@ export class AdminService {
 
         const wallet = user.walletAddress || '';
 
-        const [payouts, investments, orders, commissions, withdrawals] = await Promise.all([
+        const [payouts, investments, orders, commissions, withdrawals, referrer, totalReferred] = await Promise.all([
             this.investmentsService.getUserPayouts(userId),
             this.investmentsService.getUserInvestments(userId),
             this.ordersService.findByWalletAddress(wallet),
             this.commissionsService.findByWallet(wallet),
             this.withdrawalsService.getUserWithdrawals(userId, wallet),
+            user.referredById != null ? this.usersService.findOne(user.referredById) : Promise.resolve(null),
+            this.usersService.countReferrals(userId),
         ]);
 
         return {
@@ -36,6 +38,8 @@ export class AdminService {
             orders,
             commissions,
             withdrawals,
+            referrer: referrer ? { id: referrer.id, name: referrer.name, referralCode: referrer.referralCode } : null,
+            totalReferred,
         };
     }
 }

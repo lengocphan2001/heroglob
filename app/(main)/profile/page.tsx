@@ -40,6 +40,7 @@ export default function ProfilePage() {
     referralCount: 0,
     stakingRewards: 0,
   });
+  const [userName, setUserName] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -63,6 +64,7 @@ export default function ProfilePage() {
           ethBalance: parseFloat(balanceData.ethBalance || '0'),
           usdValue: parseFloat(balanceData.usdValue || '0'),
         }));
+        setUserName(typeof balanceData.name === 'string' ? balanceData.name : null);
       }
       const nftRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/nfts?walletAddress=${address}`);
       if (nftRes.ok) {
@@ -95,11 +97,11 @@ export default function ProfilePage() {
 
   if (!address) return null;
 
-  const displayName = 'Aetheria_Explorer';
+  const nameFromApi = userName?.trim() || '';
 
   return (
     <div className="flex flex-col min-h-full bg-slate-100 dark:bg-[var(--color-background-dark)] pb-24">
-      <main className="flex-1 overflow-y-auto">
+      <div className="flex-1 min-h-0">
         {/* Profile section */}
         <div className="flex flex-col items-center px-4 py-8">
           <div className="relative">
@@ -115,8 +117,9 @@ export default function ProfilePage() {
             </div>
           </div>
           <div className="mt-4 text-center">
+            <p className="text-slate-500 dark:text-slate-400 text-xs font-medium uppercase tracking-wider mb-1">Họ tên</p>
             <h1 className="text-slate-900 dark:text-slate-100 text-2xl font-bold tracking-tight">
-              {displayName}
+              {nameFromApi || '—'}
             </h1>
             <div className="flex items-center justify-center gap-2 mt-1">
               <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">
@@ -263,7 +266,7 @@ export default function ProfilePage() {
             </button>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

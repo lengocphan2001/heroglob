@@ -96,7 +96,10 @@ export async function checkBalance(
   walletAddress: string,
   tokenAddress: string,
   requiredRawAmount: bigint,
+  options?: { tokenLabel?: string; decimals?: number },
 ): Promise<void> {
+  const tokenLabel = options?.tokenLabel ?? 'token';
+  const decimals = options?.decimals ?? 18;
   const BALANCE_SELECTOR = '0x70a08231'; // balanceOf(address)
   const data = BALANCE_SELECTOR + padAddress(walletAddress);
 
@@ -115,13 +118,11 @@ export async function checkBalance(
     const balance = BigInt(hexBalance);
 
     if (balance < requiredRawAmount) {
-      // Estimate decimals to show friendly error (assuming 18 for BSC/Default, 6 for others? We don't have chainId here easily).
-      // But we can just show raw / 10^18 approx.
-      // Or just say "Has approx X (Raw: Y)"
-      const friendlyBalance = (Number(balance) / 1e18).toFixed(18).replace(/\.?0+$/, '');
-      const friendlyNeeded = (Number(requiredRawAmount) / 1e18).toFixed(18).replace(/\.?0+$/, '');
+      const divisor = 10 ** decimals;
+      const friendlyBalance = (Number(balance) / divisor).toFixed(decimals).replace(/\.?0+$/, '');
+      const friendlyNeeded = (Number(requiredRawAmount) / divisor).toFixed(decimals).replace(/\.?0+$/, '');
 
-      throw new Error(`Insufficient balance. You have ${friendlyBalance} (Raw: ${balance}), but need ${friendlyNeeded}. Please ensure you have USDT on BSC (BEP20).`);
+      throw new Error(`Số dư không đủ. Bạn có ${friendlyBalance} ${tokenLabel} (Raw: ${balance}), cần ${friendlyNeeded} ${tokenLabel}. Vui lòng nạp ${tokenLabel} trên BSC (BEP20).`);
     }
   } catch (err: any) {
     if (err.message && err.message.includes('Insufficient balance')) {

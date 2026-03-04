@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useWallet } from '@/contexts/WalletContext';
 import { useConfig } from '@/contexts/ConfigContext';
 import { ArrowLeft, Users, Copy, Share2, UserPlus, Coins } from 'lucide-react';
+import { RankSection } from '@/components/sections/wallet';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -167,6 +168,11 @@ export default function ReferralsPage() {
                 <Share2 className="h-5 w-5" />
                 Chia sẻ link giới thiệu
               </button>
+            </div>
+
+            {/* Rank section (Hệ thống anh Hùng – same as wallet) */}
+            <div className="mb-8">
+              <RankSection />
             </div>
 
             {/* Referral list */}

@@ -68,6 +68,8 @@ export interface UserDetailPayload {
         status: string;
         createdAt: string;
     }>;
+    referrer: { id: number; name: string; referralCode: string | null } | null;
+    totalReferred: number;
 }
 
 export function getAdminUserDetail(userId: number) {

@@ -12,7 +12,7 @@ export default function MainLayout({
       <div className="shrink-0">
         <HeaderSwitcher />
       </div>
-      <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
+      <main className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">{children}</main>
       <BottomNav />
     </div>
   );

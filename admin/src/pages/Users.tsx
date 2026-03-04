@@ -256,16 +256,51 @@ export function Users() {
               </div>
               <div className="flex-1 overflow-y-auto min-h-0">
                 {detailTab === 'info' && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-zinc-900 dark:text-zinc-100">
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Họ tên</span><span className="font-medium">{detailData.user.name}</span></div>
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Email</span><span className="font-medium">{detailData.user.email || '—'}</span></div>
-                    <div className="sm:col-span-2"><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Ví</span><span className="font-mono text-xs break-all text-zinc-800 dark:text-zinc-200">{detailData.user.walletAddress || '—'}</span></div>
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">USDT</span><span className="font-medium">{Number(detailData.user.usdtBalance).toLocaleString()}</span></div>
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">{tokenSymbol}</span><span className="font-medium">{Number(detailData.user.heroBalance).toLocaleString()}</span></div>
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Rank</span><Badge variant="default">{detailData.user.rank}</Badge></div>
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Vai trò</span><Badge variant={detailData.user.role === 'admin' ? 'danger' : 'default'}>{detailData.user.role}</Badge></div>
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Mã giới thiệu</span><span className="font-medium">{detailData.user.referralCode || '—'}</span></div>
-                    <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Ngày tạo</span><span className="font-medium">{format(new Date(detailData.user.createdAt), 'dd/MM/yyyy HH:mm')}</span></div>
+                  <div className="space-y-5 text-sm text-zinc-900 dark:text-zinc-100">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Họ tên</span><span className="font-medium">{detailData.user.name}</span></div>
+                      <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Email</span><span className="font-medium">{detailData.user.email || '—'}</span></div>
+                      <div className="sm:col-span-2"><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Ví</span><span className="font-mono text-xs break-all text-zinc-800 dark:text-zinc-200">{detailData.user.walletAddress || '—'}</span></div>
+                      <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">USDT</span><span className="font-medium">{Number(detailData.user.usdtBalance).toLocaleString()}</span></div>
+                      <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">{tokenSymbol}</span><span className="font-medium">{Number(detailData.user.heroBalance).toLocaleString()}</span></div>
+                      <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Rank</span><Badge variant="default">{detailData.user.rank}</Badge></div>
+                      <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Vai trò</span><Badge variant={detailData.user.role === 'admin' ? 'danger' : 'default'}>{detailData.user.role}</Badge></div>
+                      <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Ngày tạo</span><span className="font-medium">{format(new Date(detailData.user.createdAt), 'dd/MM/yyyy HH:mm')}</span></div>
+                    </div>
+                    {/* Referral block */}
+                    <div className="rounded-lg border border-zinc-200 dark:border-zinc-600 bg-zinc-50 dark:bg-zinc-800/50 p-4 space-y-3">
+                      <h4 className="font-semibold text-zinc-800 dark:text-zinc-200">Giới thiệu</h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Mã giới thiệu</span><span className="font-medium font-mono">{detailData.user.referralCode || '—'}</span></div>
+                        <div className="sm:col-span-2"><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Link giới thiệu</span>
+                          {detailData.user.referralCode ? (
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono text-xs break-all text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-700 px-2 py-1 rounded">
+                                {(typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_URL) ? `${String(import.meta.env.VITE_APP_URL).replace(/\/$/, '')}?ref=${detailData.user.referralCode}` : (typeof window !== 'undefined' ? `${window.location.origin.replace(/\/$/, '')}?ref=${detailData.user.referralCode}` : `?ref=${detailData.user.referralCode}`)}
+                              </span>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const base = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_URL) ? String(import.meta.env.VITE_APP_URL).replace(/\/$/, '') : (typeof window !== 'undefined' ? window.location.origin.replace(/\/$/, '') : '');
+                                  const link = base ? `${base}?ref=${detailData.user.referralCode}` : '';
+                                  if (link && detailData.user.referralCode) {
+                                    navigator.clipboard.writeText(link);
+                                    toast.success('Đã sao chép link');
+                                  }
+                                }}
+                              >
+                                Sao chép
+                              </Button>
+                            </div>
+                          ) : (
+                            <span className="text-zinc-500 dark:text-zinc-400">—</span>
+                          )}
+                        </div>
+                        <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Được giới thiệu bởi</span><span className="font-medium">{detailData.referrer ? `${detailData.referrer.name} (#${detailData.referrer.id}${detailData.referrer.referralCode ? ` · ${detailData.referrer.referralCode}` : ''})` : '—'}</span></div>
+                        <div><span className="text-zinc-500 dark:text-zinc-400 block mb-0.5">Số người đã giới thiệu</span><span className="font-medium">{detailData.totalReferred}</span></div>
+                      </div>
+                    </div>
                   </div>
                 )}
                 {detailTab === 'payouts' && (

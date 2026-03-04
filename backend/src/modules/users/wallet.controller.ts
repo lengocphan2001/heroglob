@@ -16,14 +16,16 @@ export class WalletController {
                 heroBalance: 0,
                 usdtBalance: 0,
                 ethBalance: 0,
-                usdValue: 0
+                usdValue: 0,
+                name: null,
             };
         }
         return {
             heroBalance: Number(user.heroBalance || 0),
             usdtBalance: Number(user.usdtBalance || 0),
             ethBalance: 0, // Placeholder
-            usdValue: 0    // Placeholder - would need price feed
+            usdValue: 0,   // Placeholder - would need price feed
+            name: user.name ?? null,
         };
     }
 }

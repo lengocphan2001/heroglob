@@ -31,7 +31,7 @@ export default function WalletPage() {
 
   return (
     <div className="flex flex-col min-h-full bg-slate-100 dark:bg-[var(--color-background-dark)]">
-      <main className="flex-1 overflow-y-auto px-4 pb-24">
+      <div className="flex-1 min-h-0 px-4 pb-24">
         {/* Balance Card */}
         <div className="mt-2">
           {!isConnected ? (
@@ -156,7 +156,7 @@ export default function WalletPage() {
         <div className="px-0 pb-6 pt-6">
           <RankSection />
         </div>
-      </main>
+      </div>
 
       <WithdrawModal
         isOpen={withdrawModalOpen}

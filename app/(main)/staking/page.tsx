@@ -58,7 +58,7 @@ export default function StakingPage() {
     };
 
     return (
-        <div className="relative mx-auto flex max-w-md flex-col bg-white min-h-screen pb-24">
+        <div className="relative mx-auto flex max-w-md flex-col bg-white min-h-full pb-24">
             {/* Top App Bar */}
             <div className="sticky top-0 z-20 flex items-center bg-white/95 backdrop-blur-md p-4 pb-2 justify-between">
                 <button onClick={() => router.back()} className="text-slate-900 flex size-12 shrink-0 items-center">

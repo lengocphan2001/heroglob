@@ -10,7 +10,7 @@ import { getProduct, type Product } from '@/lib/api/products';
 import { createOrder } from '@/lib/api/orders';
 import { useWallet } from '@/contexts/WalletContext';
 import { useConfig } from '@/contexts/ConfigContext';
-import { getUsdtAddress, getUsdtDecimals } from '@/lib/wallet/tokens';
+import { getUsdtAddress, getUsdtDecimals, HERO_TOKEN } from '@/lib/wallet/tokens';
 import { sendTokenTransfer, toRawAmount, waitForTransaction, checkBalance } from '@/lib/wallet/transfer';
 import { formatPriceDisplay } from '@/lib/formatPrice';
 
@@ -34,7 +34,7 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [buying, setBuying] = useState<'usdt' | null>(null);
+  const [buying, setBuying] = useState<'usdt' | 'hero' | null>(null);
   const [favorited, setFavorited] = useState(false);
   const [txModal, setTxModal] = useState<{
     open: boolean;
@@ -68,11 +68,11 @@ export default function ProductDetailPage() {
 
   const handleBuyUsdt = useCallback(async () => {
     if (!product || !isConnected || !address) {
-      alert('Please connect your wallet.');
+      alert('Vui lòng kết nối ví.');
       return;
     }
     if (!paymentReceiverAddress) {
-      alert('Payment not configured.');
+      alert('Thanh toán chưa được cấu hình.');
       return;
     }
     const ethereum = getEthereum();
@@ -82,7 +82,7 @@ export default function ProductDetailPage() {
     }
     const usdtAddress = getUsdtAddress(chainId);
     if (!usdtAddress) {
-      alert('USDT not supported on this network. Please switch to BSC (BEP20).');
+      alert('Mạng này không hỗ trợ USDT. Vui lòng chuyển sang BSC (BEP20).');
       return;
     }
     const priceUsdt = product.priceUsdt ?? '0';
@@ -98,7 +98,7 @@ export default function ProductDetailPage() {
       onConfirmTransfer: async () => {
         try {
           const raw = toRawAmount(priceUsdt, getUsdtDecimals(chainId));
-          await checkBalance(ethereum, address, usdtAddress, raw);
+          await checkBalance(ethereum, address, usdtAddress, raw, { tokenLabel: 'USDT', decimals: getUsdtDecimals(chainId) });
           const txHash = await sendTokenTransfer(
             ethereum,
             address,
@@ -129,6 +129,65 @@ export default function ProductDetailPage() {
     });
   }, [product, isConnected, address, chainId, paymentReceiverAddress]);
 
+  const handleBuyHero = useCallback(async () => {
+    if (!product || !isConnected || !address) {
+      alert('Vui lòng kết nối ví.');
+      return;
+    }
+    if (!paymentReceiverAddress) {
+      alert('Thanh toán chưa được cấu hình.');
+      return;
+    }
+    const ethereum = getEthereum();
+    if (!ethereum) {
+      alert('Không tìm thấy ví.');
+      return;
+    }
+    const priceHero = product.priceHero ?? '0';
+    if (parseFloat(priceHero) <= 0) return;
+    const amountDisplay = formatPriceDisplay(priceHero);
+    const heroAddress = HERO_TOKEN.address;
+    setBuying('hero');
+    setTxModal({
+      open: true,
+      status: 'confirming',
+      amountDisplay,
+      tokenLabel: tokenSymbol,
+      productTitle: product.title,
+      onConfirmTransfer: async () => {
+        try {
+          const raw = toRawAmount(priceHero, HERO_TOKEN.decimals);
+          await checkBalance(ethereum, address, heroAddress, raw, { tokenLabel: tokenSymbol, decimals: HERO_TOKEN.decimals });
+          const txHash = await sendTokenTransfer(
+            ethereum,
+            address,
+            heroAddress,
+            paymentReceiverAddress,
+            raw,
+          );
+          setTxModal((m) => ({ ...m, status: 'pending', txHash }));
+          await waitForTransaction(ethereum, txHash);
+          await createOrder({
+            productId: product.id,
+            walletAddress: address,
+            tokenType: 'hero',
+            amount: amountDisplay,
+            txHash,
+          });
+          setTxModal((m) => ({ ...m, status: 'success' }));
+        } catch (err) {
+          setTxModal((m) => ({
+            ...m,
+            status: 'error',
+            error: err instanceof Error ? err.message : 'Giao dịch thất bại',
+          }));
+        } finally {
+          setBuying(null);
+        }
+      },
+    });
+  }, [product, isConnected, address, tokenSymbol, paymentReceiverAddress]);
+
   if (loading) {
     return (
       <div className="min-h-[40vh] bg-slate-100 dark:bg-[var(--color-background-dark)] px-4 py-6 pb-32">
@@ -152,13 +211,16 @@ export default function ProductDetailPage() {
   }
 
   const priceUsdt = product.priceUsdt ?? '0';
+  const priceHero = product.priceHero ?? '0';
   const hasUsdt = parseFloat(priceUsdt) > 0;
+  const hasHero = parseFloat(priceHero) > 0;
   const displayUsdt = formatPriceDisplay(priceUsdt);
-  const primaryPrice = hasUsdt ? `${displayUsdt} USDT` : '—';
-  const canBuy = hasUsdt;
+  const displayHero = formatPriceDisplay(priceHero);
+  const primaryPrice = hasUsdt ? `${displayUsdt} USDT` : hasHero ? `${displayHero} ${tokenSymbol}` : '—';
+  const canBuy = hasUsdt || hasHero;
 
   return (
-    <div className="bg-slate-100 dark:bg-[var(--color-background-dark)] min-h-screen pb-32">
+    <div className="bg-slate-100 dark:bg-[var(--color-background-dark)] min-h-full pb-32">
       <TransactionModal
         open={txModal.open}
         status={txModal.status}
@@ -195,16 +257,6 @@ export default function ProductDetailPage() {
                 <div>
                   <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest font-bold">Giá hiện tại</p>
                   <p className="text-2xl font-bold text-slate-900 dark:text-white">{primaryPrice}</p>
-                </div>
-                <div className="border-t md:border-t-0 md:border-l border-white/10 dark:border-slate-500/30 pt-3 md:pt-0 md:pl-6">
-                  <p className="text-slate-400 dark:text-slate-500 text-xs uppercase tracking-widest font-bold mb-1">Kết thúc sau</p>
-                  <div className="flex gap-3 text-slate-900 dark:text-white font-mono font-bold text-xl">
-                    <span>—</span>
-                    <span className="text-[var(--color-primary-wallet)]">:</span>
-                    <span>—</span>
-                    <span className="text-[var(--color-primary-wallet)]">:</span>
-                    <span>—</span>
-                  </div>
                 </div>
               </div>
             </div>
@@ -282,6 +334,34 @@ export default function ProductDetailPage() {
           </section>
         </div>
       </main>
+
+      {/* Fixed vertical buy buttons */}
+      {canBuy && (
+        <div className="fixed bottom-20 left-4 right-4 z-40 max-w-2xl mx-auto flex flex-col gap-2">
+          {hasUsdt && (
+            <button
+              type="button"
+              onClick={handleBuyUsdt}
+              disabled={buying !== null}
+              className="w-full h-14 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50 bg-emerald-600 hover:bg-emerald-500 transition-colors border border-emerald-500/30 shadow-xl disabled:cursor-not-allowed"
+            >
+              <Wallet className="size-5" />
+              {buying === 'usdt' ? 'Đang xử lý...' : `Mua bằng USDT (${displayUsdt})`}
+            </button>
+          )}
+          {hasHero && (
+            <button
+              type="button"
+              onClick={handleBuyHero}
+              disabled={buying !== null}
+              className="w-full h-14 rounded-xl font-bold text-white flex items-center justify-center gap-2 disabled:opacity-50 bg-[var(--color-primary-wallet)] hover:opacity-90 transition-opacity border border-[var(--color-primary-wallet)]/50 shadow-xl disabled:cursor-not-allowed"
+            >
+              <Zap className="size-5" />
+              {buying === 'hero' ? 'Đang xử lý...' : `Mua bằng ${tokenSymbol} (${displayHero})`}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }

@@ -63,24 +63,59 @@ export class ReferralsService {
   }
 
   async registerReferral(referredWallet: string, refCode: string): Promise<{ ok: boolean; message?: string }> {
-    if (!referredWallet || !refCode) return { ok: false, message: 'Dữ liệu không hợp lệ' };
+    if (!referredWallet || !refCode?.trim()) return { ok: false, message: 'Dữ liệu không hợp lệ' };
     const referred = referredWallet.trim().toLowerCase();
-    const code = refCode.trim();
+    const code = refCode.trim().toUpperCase();
+    let referrerWallet: string | null = null;
     const codeRow = await this.codeRepo.findOne({ where: { code } });
-    if (!codeRow) return { ok: false, message: 'Mã giới thiệu không hợp lệ' };
-    const referrer = codeRow.walletAddress;
-    if (referrer === referred) return { ok: false, message: 'Không thể dùng mã của chính mình' };
+    if (codeRow) {
+      referrerWallet = codeRow.walletAddress;
+    } else {
+      const referrerUser = await this.usersService.findByReferralCode(code);
+      if (referrerUser?.walletAddress) {
+        referrerWallet = referrerUser.walletAddress.trim().toLowerCase();
+        const existingRow = await this.codeRepo.findOne({ where: { walletAddress: referrerWallet } });
+        if (existingRow) {
+          existingRow.code = code;
+          await this.codeRepo.save(existingRow);
+        } else {
+          const row = this.codeRepo.create({ walletAddress: referrerWallet, code });
+          await this.codeRepo.save(row);
+        }
+      }
+    }
+    if (!referrerWallet) return { ok: false, message: 'Mã giới thiệu không hợp lệ' };
+    if (referrerWallet === referred) return { ok: false, message: 'Không thể dùng mã của chính mình' };
     const existing = await this.referralRepo.findOne({ where: { referredWallet: referred } });
     if (existing) return { ok: true, message: 'Đã được ghi nhận trước đó' };
-    const referral = this.referralRepo.create({ referrerWallet: referrer, referredWallet: referred });
+    const referral = this.referralRepo.create({ referrerWallet, referredWallet: referred });
     await this.referralRepo.save(referral);
     return { ok: true };
   }
 
-  async getStats(walletAddress: string): Promise<{ totalReferred: number }> {
+  /** Stats from users.referred_by_id (source of truth). */
+  async getStats(walletAddress: string): Promise<{ totalReferrals: number; totalEarnings: number }> {
     const wallet = walletAddress.trim().toLowerCase();
-    const totalReferred = await this.referralRepo.count({ where: { referrerWallet: wallet } });
-    return { totalReferred };
+    const user = await this.usersService.findByWalletAddress(wallet);
+    if (!user) return { totalReferrals: 0, totalEarnings: 0 };
+    const totalReferrals = await this.usersService.countReferrals(user.id);
+    return { totalReferrals, totalEarnings: 0 };
+  }
+
+  /** List referred users from users table (referred_by_id = current user). */
+  async getList(walletAddress: string): Promise<{ id: number; referredWallet: string; createdAt: string; totalSpent: number }[]> {
+    const wallet = walletAddress.trim().toLowerCase();
+    const user = await this.usersService.findByWalletAddress(wallet);
+    if (!user) return [];
+    const referred = await this.usersService.findReferredByUserId(user.id);
+    return referred
+      .filter(u => u.walletAddress)
+      .map(u => ({
+        id: u.id,
+        referredWallet: u.walletAddress!,
+        createdAt: u.createdAt.toISOString(),
+        totalSpent: 0,
+      }));
   }
 
   async getCodeByWallet(walletAddress: string): Promise<string | null> {
