@@ -10,6 +10,7 @@ export type JwtUser = {
   email: string;
   name: string;
   role: string;
+  walletAddress: string | null;
 };
 
 @Injectable()

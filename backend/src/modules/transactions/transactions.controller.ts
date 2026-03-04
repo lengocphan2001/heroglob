@@ -10,6 +10,8 @@ export class TransactionsController {
     @Get('history')
     async getHistory(@Req() req) {
         const user = req.user;
-        return this.transactionsService.getUserHistory(user.id, user.walletAddress);
+        const userId = typeof user.id === 'string' ? parseInt(user.id, 10) : user.id;
+        const walletAddress = user.walletAddress ?? null;
+        return this.transactionsService.getUserHistory(userId, walletAddress);
     }
 }

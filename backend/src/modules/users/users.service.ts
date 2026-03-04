@@ -14,6 +14,7 @@ export type AdminUser = {
   name: string;
   role: string;
   passwordHash: string | null;
+  walletAddress: string | null;
 };
 
 function toAdminUser(entity: User): AdminUser {
@@ -23,6 +24,7 @@ function toAdminUser(entity: User): AdminUser {
     name: entity.name,
     role: entity.role,
     passwordHash: entity.passwordHash,
+    walletAddress: entity.walletAddress ?? null,
   };
 }
 

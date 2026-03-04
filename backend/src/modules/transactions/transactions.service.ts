@@ -30,18 +30,20 @@ export class TransactionsService {
         private nftRewardRepo: Repository<NFTReward>,
     ) { }
 
-    async getUserHistory(userId: number, walletAddress: string): Promise<TransactionHistoryItem[]> {
+    async getUserHistory(userId: number, walletAddress: string | null | undefined): Promise<TransactionHistoryItem[]> {
         const transactions: TransactionHistoryItem[] = [];
+        const wallet = walletAddress?.trim()?.toLowerCase();
 
-        // Get user orders
-        const orders = await this.orderRepo.find({
-            where: { walletAddress: walletAddress?.toLowerCase() },
-            relations: ['product'],
-            order: { createdAt: 'DESC' },
-            take: 50,
-        });
+        // Get user orders – only when we have a wallet address (avoid returning all)
+        if (wallet) {
+            const orders = await this.orderRepo.find({
+                where: { walletAddress: wallet },
+                relations: ['product'],
+                order: { createdAt: 'DESC' },
+                take: 50,
+            });
 
-        for (const order of orders) {
+            for (const order of orders) {
             transactions.push({
                 id: `order-${order.id}`,
                 type: 'order',
@@ -55,16 +57,18 @@ export class TransactionsService {
                     txHash: order.txHash,
                 },
             });
+            }
         }
 
-        // Get commissions (affiliate earnings)
-        const commissions = await this.commissionRepo.find({
-            where: { referrerWallet: walletAddress?.toLowerCase() },
-            order: { createdAt: 'DESC' },
-            take: 50,
-        });
+        // Get commissions (affiliate earnings) – only when we have a wallet address
+        if (wallet) {
+            const commissions = await this.commissionRepo.find({
+                where: { referrerWallet: wallet },
+                order: { createdAt: 'DESC' },
+                take: 50,
+            });
 
-        for (const commission of commissions) {
+            for (const commission of commissions) {
             transactions.push({
                 id: `commission-${commission.id}`,
                 type: 'commission',
@@ -78,6 +82,7 @@ export class TransactionsService {
                     orderId: commission.orderId,
                 },
             });
+            }
         }
 
         // Get payouts (investment & rank rewards) – only paid (credited to user)
