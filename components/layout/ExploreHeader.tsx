@@ -1,44 +1,43 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, Bell } from 'lucide-react';
+import { LayoutGrid, Search, Bell } from 'lucide-react';
+import { useConfig } from '@/contexts/ConfigContext';
 
 type Props = {
   title?: string;
-  showNotificationDot?: boolean;
 };
 
-export function ExploreHeader({
-  title = 'Khám Phá',
-  showNotificationDot = true,
-}: Props) {
+export function ExploreHeader({ title }: Props) {
+  const { projectName } = useConfig();
+  const displayTitle = title ?? `Khám phá ${projectName}`;
+
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/80 backdrop-blur-xl">
-      <div className="flex items-center justify-between p-4">
-        <button
-          type="button"
-          className="flex size-10 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface-light)] text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/20"
-          aria-label="Menu"
-        >
-          <Menu className="size-6" />
-        </button>
-        <h1 className="flex-1 text-center text-xl font-bold leading-tight tracking-tight text-slate-900">
-          {title}
-        </h1>
-        <div className="relative flex size-10 items-center justify-end">
+    <header className="sticky top-0 z-50 bg-slate-100/80 dark:bg-[var(--color-background-dark)]/80 backdrop-blur-md border-b border-slate-200 dark:border-[var(--color-primary-wallet)]/20 px-4 py-4">
+      <div className="flex items-center justify-between max-w-7xl mx-auto">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-[var(--color-primary-wallet)]/10 border border-[var(--color-primary-wallet)]/20">
+            <LayoutGrid className="size-5 text-[var(--color-primary-wallet)]" aria-hidden />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+            {displayTitle}
+          </h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-[var(--color-primary-wallet)]/20 transition-colors"
+            aria-label="Tìm kiếm"
+          >
+            <Search className="size-5 text-slate-600 dark:text-slate-400" />
+          </button>
           <Link
             href="/notifications"
-            className="flex size-10 items-center justify-center text-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/20 rounded-full"
-            aria-label="Notifications"
+            className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-[var(--color-primary-wallet)]/20 transition-colors"
+            aria-label="Thông báo"
           >
-            <Bell className="size-6" />
+            <Bell className="size-5 text-slate-600 dark:text-slate-400" />
           </Link>
-          {showNotificationDot && (
-            <span
-              className="absolute right-0 top-0 block size-2 rounded-full bg-[var(--color-primary)] ring-2 ring-white"
-              aria-hidden
-            />
-          )}
         </div>
       </div>
     </header>

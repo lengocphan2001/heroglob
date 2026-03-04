@@ -3,5 +3,8 @@ export { Footer } from './Footer';
 export { SiteHeader } from './SiteHeader';
 export { ExploreHeader } from './ExploreHeader';
 export { HeaderSwitcher } from './HeaderSwitcher';
+export { ProfileHeader } from './ProfileHeader';
+export { NftDetailHeader } from './NftDetailHeader';
+export { ActivePowerHeader } from './ActivePowerHeader';
 export { WalletHeader } from './WalletHeader';
 export { BottomNav } from './BottomNav';

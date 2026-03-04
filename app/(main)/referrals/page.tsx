@@ -4,166 +4,218 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@/contexts/WalletContext';
 import { useConfig } from '@/contexts/ConfigContext';
-import { ArrowLeft, Users, Copy, Share2 } from 'lucide-react';
+import { ArrowLeft, Users, Copy, Share2, UserPlus, Coins } from 'lucide-react';
 
 interface ReferralStats {
-    totalReferrals: number;
-    totalEarnings: number;
-    referralCode: string;
+  totalReferrals: number;
+  totalEarnings: number;
+  referralCode: string;
 }
 
 interface Referral {
-    id: number;
-    referredWallet: string;
-    createdAt: string;
-    totalSpent: number;
+  id: number;
+  referredWallet: string;
+  createdAt: string;
+  totalSpent: number;
 }
 
 export default function ReferralsPage() {
-    const router = useRouter();
-    const { address } = useWallet();
-    const { tokenSymbol } = useConfig();
-    const [stats, setStats] = useState<ReferralStats | null>(null);
-    const [referrals, setReferrals] = useState<Referral[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [copied, setCopied] = useState(false);
+  const router = useRouter();
+  const { address } = useWallet();
+  const { tokenSymbol } = useConfig();
+  const [stats, setStats] = useState<ReferralStats | null>(null);
+  const [referrals, setReferrals] = useState<Referral[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
-    useEffect(() => {
-        if (!address) {
-            router.push('/');
-            return;
-        }
+  useEffect(() => {
+    if (!address) {
+      router.push('/');
+      return;
+    }
 
-        fetchReferralData();
-    }, [address, router]);
+    fetchReferralData();
+  }, [address, router]);
 
-    const fetchReferralData = async () => {
-        if (!address) return;
+  const fetchReferralData = async () => {
+    if (!address) return;
 
-        try {
-            // Fetch stats
-            const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/referrals/stats?walletAddress=${address}`);
-            if (statsRes.ok) {
-                const statsData = await statsRes.json();
-                setStats(statsData);
-            }
+    try {
+      const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/referrals/stats?walletAddress=${address}`);
+      if (statsRes.ok) {
+        const statsData = await statsRes.json();
+        setStats(statsData);
+      }
 
-            // Fetch referral code
-            const codeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/referrals/code?walletAddress=${address}`);
-            if (codeRes.ok) {
-                const codeData = await codeRes.json();
-                setStats(prev => prev ? { ...prev, referralCode: codeData.code } : null);
-            }
+      const codeRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/referrals/code?walletAddress=${address}`);
+      if (codeRes.ok) {
+        const codeData = await codeRes.json();
+        setStats(prev => (prev ? { ...prev, referralCode: codeData.code } : null));
+      }
 
-            // Fetch referral list
-            const listRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/referrals?walletAddress=${address}`);
-            if (listRes.ok) {
-                const listData = await listRes.json();
-                setReferrals(listData);
-            }
-        } catch (error) {
-            console.error('Error fetching referral data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+      const listRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/referrals?walletAddress=${address}`);
+      if (listRes.ok) {
+        const listData = await listRes.json();
+        setReferrals(listData);
+      }
+    } catch (error) {
+      console.error('Error fetching referral data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const copyReferralLink = () => {
-        if (stats?.referralCode) {
-            const link = `${window.location.origin}?ref=${stats.referralCode}`;
-            navigator.clipboard.writeText(link);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        }
-    };
+  const copyReferralLink = () => {
+    if (stats?.referralCode) {
+      const link = `${window.location.origin}?ref=${stats.referralCode}`;
+      navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
-    const formatAddress = (addr: string) => {
-        return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
-    };
+  const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
-    return (
-        <div className="relative mx-auto flex max-w-md flex-col bg-white min-h-screen pb-24">
-            {/* Top App Bar */}
-            <div className="sticky top-0 z-20 flex items-center bg-white/95 backdrop-blur-md p-4 pb-2 justify-between">
-                <button onClick={() => router.back()} className="text-slate-900 flex size-12 shrink-0 items-center">
-                    <ArrowLeft className="w-6 h-6" />
-                </button>
-                <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">Giới Thiệu</h2>
-                <div className="w-12"></div>
-            </div>
-
-            <div className="mt-2 flex-1 rounded-t-[40px] border-t border-slate-100 bg-white pt-6">
-                <div className="px-6 pb-6">
-                    {loading ? (
-                        <div className="flex items-center justify-center py-20">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#330df2]"></div>
-                        </div>
-                    ) : (
-                        <>
-                            {/* Stats Cards */}
-                            <div className="grid grid-cols-2 gap-4 mb-6">
-                                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Giới Thiệu</p>
-                                    <p className="text-2xl font-bold text-slate-900">{stats?.totalReferrals || 0}</p>
-                                </div>
-                                <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-                                    <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Thu Nhập</p>
-                                    <p className="text-2xl font-bold text-[#330df2]">{stats?.totalEarnings || 0} HERO</p>
-                                </div>
-                            </div>
-
-                            {/* Referral Link */}
-                            <div className="bg-gradient-to-br from-[#330df2] to-[#7c3aed] rounded-3xl p-6 mb-8 text-white shadow-xl shadow-[#330df2]/20">
-                                <h3 className="font-bold text-lg mb-2">Mã Giới Thiệu Của Bạn</h3>
-                                <div className="bg-white/20 backdrop-blur-md rounded-xl p-3 flex items-center justify-between mb-4 border border-white/20">
-                                    <code className="font-mono text-base font-bold tracking-widest">{stats?.referralCode || '...'}</code>
-                                    <button onClick={copyReferralLink} className="ml-2 p-1 hover:bg-white/10 rounded-lg transition-colors">
-                                        <Copy className="w-5 h-5" />
-                                    </button>
-                                </div>
-                                {copied && <p className="text-xs text-green-300 mb-2 font-medium">✓ Đã sao chép link!</p>}
-                                <button
-                                    onClick={copyReferralLink}
-                                    className="w-full bg-white text-[#330df2] rounded-xl py-3 font-bold flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors shadow-sm"
-                                >
-                                    <Share2 className="w-5 h-5" />
-                                    Chia Sẻ Link Giới Thiệu
-                                </button>
-                            </div>
-
-                            {/* Referral List */}
-                            <h3 className="text-slate-900 text-lg font-bold mb-4 px-2">Lịch Sử Giới Thiệu</h3>
-                            {referrals.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-10 text-center bg-slate-50 rounded-3xl p-8">
-                                    <Users className="w-16 h-16 text-slate-300 mb-4" />
-                                    <p className="text-slate-600 font-medium">Chưa có giới thiệu nào</p>
-                                    <p className="text-sm text-slate-400 mt-1">Chia sẻ link để bắt đầu kiếm tiền!</p>
-                                </div>
-                            ) : (
-                                <div className="space-y-3">
-                                    {referrals.map((ref) => (
-                                        <div
-                                            key={ref.id}
-                                            className="bg-slate-50 rounded-2xl p-4 flex items-center justify-between"
-                                        >
-                                            <div>
-                                                <p className="font-mono text-sm font-bold text-slate-900">{formatAddress(ref.referredWallet)}</p>
-                                                <p className="text-xs text-slate-500 mt-1 font-medium">
-                                                    Tham gia {new Date(ref.createdAt).toLocaleDateString()}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-sm font-bold text-[#330df2]">{ref.totalSpent} {tokenSymbol}</p>
-                                                <p className="text-xs text-slate-500 font-medium">Đã chi tiêu</p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-            </div>
+  return (
+    <div className="flex min-h-full flex-col bg-[var(--color-background)] dark:bg-[var(--color-background-dark)]">
+      {/* Header */}
+      <div className="sticky top-0 z-10 glass-light px-4 py-3">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.back()}
+            className="flex size-10 shrink-0 items-center justify-center rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-white/10 transition-colors"
+            aria-label="Quay lại"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex-1">
+            Giới Thiệu
+          </h1>
+          <div className="w-10" />
         </div>
-    );
+      </div>
+
+      <div className="flex-1 px-4 pb-24 pt-4">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-24">
+            <div
+              className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--color-primary-wallet)] border-t-transparent"
+              aria-hidden
+            />
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">Đang tải...</p>
+          </div>
+        ) : (
+          <>
+            {/* Stats */}
+            <div className="grid grid-cols-2 gap-3 mb-6">
+              <div className="rounded-2xl border border-slate-200 dark:border-[var(--color-border-dark)] bg-[var(--color-surface)] dark:bg-[var(--color-surface-dark)] p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-primary-wallet)]/10">
+                    <UserPlus className="h-4 w-4 text-[var(--color-primary-wallet)]" />
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Tổng giới thiệu
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                  {stats?.totalReferrals ?? 0}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 dark:border-[var(--color-border-dark)] bg-[var(--color-surface)] dark:bg-[var(--color-surface-dark)] p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="flex size-8 items-center justify-center rounded-lg bg-[var(--color-primary-wallet)]/10">
+                    <Coins className="h-4 w-4 text-[var(--color-primary-wallet)]" />
+                  </div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Tổng thu nhập
+                  </span>
+                </div>
+                <p className="text-2xl font-bold text-[var(--color-primary-wallet)]">
+                  {stats?.totalEarnings ?? 0} {tokenSymbol}
+                </p>
+              </div>
+            </div>
+
+            {/* Referral code card */}
+            <div
+              className="relative overflow-hidden rounded-2xl p-6 mb-8 text-white shadow-xl"
+              style={{
+                background: 'linear-gradient(135deg, var(--color-primary-wallet) 0%, #6366f1 50%, #7c3aed 100%)',
+                boxShadow: '0 20px 40px -12px rgba(51, 13, 242, 0.35)',
+              }}
+            >
+              <h3 className="font-bold text-lg mb-3">Mã giới thiệu của bạn</h3>
+              <div className="flex items-center gap-3 rounded-xl bg-white/15 backdrop-blur-sm border border-white/20 p-3.5 mb-4">
+                <code className="font-mono text-lg font-bold tracking-[0.2em] flex-1 truncate">
+                  {stats?.referralCode || '...'}
+                </code>
+                <button
+                  onClick={copyReferralLink}
+                  className="shrink-0 flex size-10 items-center justify-center rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                  aria-label="Sao chép"
+                >
+                  <Copy className="w-5 h-5" />
+                </button>
+              </div>
+              {copied && (
+                <p className="text-sm font-medium text-green-200 mb-3">✓ Đã sao chép link!</p>
+              )}
+              <button
+                onClick={copyReferralLink}
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-white py-3.5 font-bold text-[var(--color-primary-wallet)] shadow-md hover:bg-slate-50 active:scale-[0.99] transition"
+              >
+                <Share2 className="h-5 w-5" />
+                Chia sẻ link giới thiệu
+              </button>
+            </div>
+
+            {/* Referral list */}
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-3">
+              Lịch sử giới thiệu
+            </h2>
+            {referrals.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 dark:border-[var(--color-border-dark)] bg-[var(--color-surface)] dark:bg-[var(--color-surface-dark)] py-12 px-6 text-center">
+                <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-slate-100 dark:bg-white/5">
+                  <Users className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+                </div>
+                <p className="font-medium text-slate-700 dark:text-slate-300">Chưa có giới thiệu nào</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Chia sẻ link để bắt đầu kiếm thêm!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {referrals.map((ref) => (
+                  <div
+                    key={ref.id}
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-[var(--color-border-dark)] bg-[var(--color-surface)] dark:bg-[var(--color-surface-dark)] p-4 shadow-sm"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary-wallet)]/10 text-[var(--color-primary-wallet)] font-bold text-sm">
+                        {ref.referredWallet.slice(2, 4).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                          {formatAddress(ref.referredWallet)}
+                        </p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                          Tham gia {new Date(ref.createdAt).toLocaleDateString('vi-VN')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0 pl-3">
+                      <p className="text-sm font-bold text-[var(--color-primary-wallet)]">
+                        {ref.totalSpent} {tokenSymbol}
+                      </p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">Đã chi tiêu</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  );
 }

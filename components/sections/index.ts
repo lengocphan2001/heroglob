@@ -8,4 +8,6 @@ export { NFTCard } from './NFTCard';
 export type { NFTCardProps } from './NFTCard';
 export { ProductCard } from './ProductCard';
 export type { ProductCardProps } from './ProductCard';
+export { ExploreProductCard } from './ExploreProductCard';
+export type { ExploreProductCardProps } from './ExploreProductCard';
 export { SectionTitle } from './SectionTitle';

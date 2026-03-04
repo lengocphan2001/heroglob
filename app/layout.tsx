@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import { WalletProvider } from "@/contexts/WalletContext";
+import { BalanceProvider } from "@/contexts/BalanceContext";
 import { ConfigProvider } from "@/contexts/ConfigContext";
 import { ReferralTracker } from "@/components/ReferralTracker";
 import { Suspense } from "react";
@@ -26,15 +27,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className="light h-full">
-      <body className={`${plusJakarta.variable} antialiased h-full w-full flex justify-center bg-slate-100`}>
-        <div className="w-full max-w-[480px] h-full bg-[var(--color-background)] shadow-[0_0_50px_-12px_rgb(0,0,0,0.25)] overflow-hidden relative font-sans">
+    <html lang="vi" className="dark h-full" suppressHydrationWarning>
+      <body className={`${plusJakarta.variable} antialiased h-full w-full flex justify-center bg-[var(--color-background)]`}>
+        <div className="w-full max-w-[480px] h-full bg-[var(--color-background)] shadow-[0_0_50px_-12px_rgb(0,0,0,0.4)] overflow-hidden relative font-sans">
           <ConfigProvider>
             <WalletProvider>
-              <Suspense fallback={null}>
-                <ReferralTracker />
-              </Suspense>
-              {children}
+              <BalanceProvider>
+                <Suspense fallback={null}>
+                  <ReferralTracker />
+                </Suspense>
+                {children}
+              </BalanceProvider>
             </WalletProvider>
           </ConfigProvider>
         </div>

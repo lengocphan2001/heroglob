@@ -1,14 +1,19 @@
 import { api } from '@/lib/api';
 
-export type PayoutHistory = {
+export type PayoutItem = {
     id: number;
     userId: number;
     investmentId: number | null;
-    amount: number;
-    type: string | null;
+    orderId: number | null;
+    walletAddress: string | null;
+    amount: string;
+    txHash: string | null;
+    type: string;
+    scheduledAt: string | null;
+    status: string;
     createdAt: string;
 };
 
-export async function getMyPayouts(): Promise<PayoutHistory[]> {
-    return api<PayoutHistory[]>('investments/my-payouts');
+export async function getMyPayouts(): Promise<PayoutItem[]> {
+    return api<PayoutItem[]>('investments/my-payouts');
 }

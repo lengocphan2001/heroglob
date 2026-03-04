@@ -13,11 +13,13 @@ import {
 } from '../components/ui/Table';
 import { Badge } from '../components/ui/Badge';
 import { getOrders, updateOrderStatus, type Order } from '../api/orders';
+import { useTokenConfig } from '../contexts/ConfigContext';
 
 const BSC_TX = 'https://bscscan.com/tx/';
 const POLL_INTERVAL = 30000; // 30 seconds
 
 export function Orders() {
+  const { tokenSymbol } = useTokenConfig();
   const [list, setList] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -247,7 +249,7 @@ export function Orders() {
                         </Badge>
                       </TableCell>
                       <TableCell className="font-medium">
-                        {o.amount} {o.tokenType === 'usdt' ? 'USDT' : 'HERO'}
+                        {o.amount} {o.tokenType === 'usdt' ? 'USDT' : tokenSymbol}
                       </TableCell>
                       <TableCell>
                         <Badge variant={

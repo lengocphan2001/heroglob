@@ -7,9 +7,11 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--color-background)] text-slate-800">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden bg-[var(--color-background)] text-slate-900 dark:text-slate-100">
       <RefCaptureWrapper />
-      <HeaderSwitcher />
+      <div className="shrink-0">
+        <HeaderSwitcher />
+      </div>
       <main className="min-h-0 flex-1 overflow-y-auto">{children}</main>
       <BottomNav />
     </div>

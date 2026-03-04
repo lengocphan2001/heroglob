@@ -57,4 +57,14 @@ export class UpdateProductDto {
   @IsOptional()
   @IsNumber()
   stock?: number;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  dailyHeroReward?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(30)
+  maxHeroReward?: string;
 }

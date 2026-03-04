@@ -11,6 +11,7 @@ import {
   type CreateProductPayload,
 } from '../api/products';
 import { getCategories } from '../api/categories';
+import { useTokenConfig } from '../contexts/ConfigContext';
 import { ImagePlus } from 'lucide-react';
 
 const defaultForm: CreateProductPayload = {
@@ -27,6 +28,7 @@ const defaultForm: CreateProductPayload = {
 };
 
 export function ProductForm() {
+  const { tokenSymbol } = useTokenConfig();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isEdit = Boolean(id);
@@ -279,7 +281,7 @@ export function ProductForm() {
               placeholder="0"
             />
             <Input
-              label="Giá HERO"
+              label={`Giá ${tokenSymbol}`}
               name="priceHero"
               type="text"
               inputMode="decimal"

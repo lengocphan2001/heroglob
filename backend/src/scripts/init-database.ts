@@ -26,6 +26,7 @@ import { ActivePowerPackage } from '../modules/active-power/entities/active-powe
 async function bootstrap() {
     console.log('🚀 Starting database initialization...');
 
+
     // Create standalone DataSource
     const dataSource = new DataSource({
         type: 'mysql',

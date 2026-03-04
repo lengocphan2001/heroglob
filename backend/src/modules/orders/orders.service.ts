@@ -7,6 +7,9 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { ReferralsService } from '../referrals/referrals.service';
 import { NFTsService } from '../nfts/nfts.service';
 import { UsersService } from '../users/users.service';
+import { InvestmentsService } from '../investments/investments.service';
+import { SystemConfigService } from '../system-config/system-config.service';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class OrdersService {
@@ -17,6 +20,9 @@ export class OrdersService {
     private readonly referralsService: ReferralsService,
     private readonly nftsService: NFTsService,
     private readonly usersService: UsersService,
+    private readonly investmentsService: InvestmentsService,
+    private readonly configService: SystemConfigService,
+    private readonly productsService: ProductsService,
   ) { }
 
   async create(dto: CreateOrderDto): Promise<Order> {
@@ -30,10 +36,12 @@ export class OrdersService {
     });
     const savedOrder = await this.repo.save(order);
 
+    // Ensure we have a user for this wallet (so NFT and payouts can be attached)
+    const user = await this.usersService.findOrCreateByWallet(dto.walletAddress);
+
     // Create NFT for the user
     try {
-      const user = await this.usersService.findByWallet(dto.walletAddress);
-      if (user && dto.productId) {
+      if (dto.productId) {
         await this.nftsService.createNFT(
           user.id,
           dto.walletAddress,
@@ -67,11 +75,47 @@ export class OrdersService {
       // Do not fail order creation if commission fails
     }
 
+    // Schedule daily token (HERO) payouts for product purchase: use product's Daily HERO Reward, cap by Max HERO Reward.
+    try {
+      if (dto.productId) {
+        const product = await this.productsService.findOne(dto.productId);
+        const dailyReward = Number(product.dailyHeroReward) || 0;
+        const maxReward = Number(product.maxHeroReward) || 0;
+        const maxDaysConfig = parseInt(await this.configService.get('PRODUCT_PURCHASE_PAYOUT_DAYS', '30'), 10);
+
+        if (dailyReward > 0 && maxDaysConfig > 0) {
+          let numberOfDays = maxDaysConfig;
+          if (maxReward > 0) {
+            const capDays = Math.ceil(maxReward / dailyReward);
+            numberOfDays = Math.min(maxDaysConfig, capDays);
+          }
+          await this.investmentsService.scheduleOrderPayouts(
+            user.id,
+            user.walletAddress ?? dto.walletAddress,
+            savedOrder.id,
+            dailyReward,
+            numberOfDays,
+          );
+        }
+      }
+    } catch (e) {
+      console.error('Error scheduling order payouts:', e);
+    }
+
     return savedOrder;
   }
 
   async findAll(): Promise<Order[]> {
     return this.repo.find({
+      relations: ['product'],
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async findByWalletAddress(walletAddress: string): Promise<Order[]> {
+    if (!walletAddress?.trim()) return [];
+    return this.repo.find({
+      where: { walletAddress: walletAddress.trim().toLowerCase() },
       relations: ['product'],
       order: { createdAt: 'DESC' },
     });

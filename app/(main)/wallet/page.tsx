@@ -1,106 +1,129 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import Link from 'next/link';
 import {
   BalanceCard,
-  WalletTabs,
+  ActionGrid,
   TokenRow,
+  VaultCard,
   RankSection,
-  HistoryTab,
-  NFTsTab,
 } from '@/components/sections/wallet';
 import { WithdrawModal } from '@/components/modals/WithdrawModal';
 import { useWallet } from '@/contexts/WalletContext';
-import { getUserBalance, type UserBalance } from '@/lib/api/balance';
+import { useBalance } from '@/contexts/BalanceContext';
 import { useConfig } from '@/contexts/ConfigContext';
 
-type TabId = 'tokens' | 'nfts' | 'history';
-
 export default function WalletPage() {
-  const [activeTab, setActiveTab] = useState<TabId>('tokens');
   const { isConnected } = useWallet();
-  const [balance, setBalance] = useState<UserBalance | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { balance, loading, error, refetch } = useBalance();
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
   const [withdrawToken, setWithdrawToken] = useState<'usdt' | 'hero'>('usdt');
   const { tokenName, tokenSymbol } = useConfig();
-
-  useEffect(() => {
-    if (!isConnected) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    getUserBalance()
-      .then(setBalance)
-      .catch((err) => {
-        console.error('Failed to fetch balance:', err);
-        setError('Không thể tải số dư');
-      })
-      .finally(() => setLoading(false));
-  }, [isConnected]);
-
-  const refetch = () => {
-    if (!isConnected) return;
-    setLoading(true);
-    setError(null);
-    getUserBalance()
-      .then(setBalance)
-      .catch((err) => {
-        console.error('Failed to fetch balance:', err);
-        setError('Không thể tải số dư');
-      })
-      .finally(() => setLoading(false));
-  };
 
   const handleWithdraw = (tokenType: 'usdt' | 'hero') => {
     setWithdrawToken(tokenType);
     setWithdrawModalOpen(true);
   };
 
-  return (
-    <div className="relative mx-auto flex max-w-md flex-col bg-white">
-      <div className="px-6 pt-2 pb-8">
-        {!isConnected ? (
-          <div className="wallet-gradient-card flex min-h-[140px] flex-col items-center justify-center rounded-3xl p-8 text-white shadow-2xl">
-            <p className="text-sm font-medium text-white/90">Kết nối ví để xem số dư</p>
-          </div>
-        ) : loading ? (
-          <div className="wallet-gradient-card flex min-h-[140px] flex-col items-center justify-center rounded-3xl p-8 text-white shadow-2xl">
-            <p className="text-sm font-medium text-white/90">Đang tải số dư...</p>
-          </div>
-        ) : error ? (
-          <div className="wallet-gradient-card rounded-3xl p-8 text-white shadow-2xl">
-            <p className="mb-2 text-sm font-medium text-white/90">{error}</p>
-            <button
-              type="button"
-              onClick={refetch}
-              className="rounded-xl bg-white/20 px-4 py-2 text-sm font-medium hover:bg-white/30"
-            >
-              Thử lại
-            </button>
-          </div>
-        ) : (
-          <BalanceCard
-            totalUsd={`$${(balance?.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
-            totalCrypto={`${(balance?.heroBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${tokenSymbol}`}
-            changePercent="—"
-          />
-        )}
-      </div>
+  const formatUsd = (n: number) =>
+    n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-      <div className="mt-2 flex-1 rounded-t-[40px] border-t border-slate-100">
-        <div className="pt-6">
-          <WalletTabs activeId={activeTab} onSelect={setActiveTab} />
+  return (
+    <div className="flex flex-col min-h-full bg-slate-100 dark:bg-[var(--color-background-dark)]">
+      <main className="flex-1 overflow-y-auto px-4 pb-24">
+        {/* Balance Card */}
+        <div className="mt-2">
+          {!isConnected ? (
+            <div
+              className="relative overflow-hidden rounded-xl p-6 shadow-2xl border border-white/10 flex min-h-[160px] flex-col items-center justify-center text-white"
+              style={{
+                backgroundColor: 'var(--color-primary-wallet)',
+                backgroundImage: `
+                  radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%),
+                  radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 0% 50%, hsla(260,82%,50%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 50%, hsla(262,82%,50%,1) 0, transparent 50%),
+                  radial-gradient(at 0% 100%, hsla(253,16%,7%,1) 0, transparent 50%),
+                  radial-gradient(at 50% 100%, hsla(225,39%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 100%, hsla(339,49%,30%,1) 0, transparent 50%)
+                `,
+              }}
+            >
+              <p className="text-sm font-medium text-white/90">Kết nối ví để xem số dư</p>
+            </div>
+          ) : loading ? (
+            <div
+              className="relative overflow-hidden rounded-xl p-6 shadow-2xl border border-white/10 flex min-h-[160px] flex-col items-center justify-center text-white"
+              style={{
+                backgroundColor: 'var(--color-primary-wallet)',
+                backgroundImage: `
+                  radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%),
+                  radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 0% 50%, hsla(260,82%,50%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 50%, hsla(262,82%,50%,1) 0, transparent 50%),
+                  radial-gradient(at 0% 100%, hsla(253,16%,7%,1) 0, transparent 50%),
+                  radial-gradient(at 50% 100%, hsla(225,39%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 100%, hsla(339,49%,30%,1) 0, transparent 50%)
+                `,
+              }}
+            >
+              <p className="text-sm font-medium text-white/90">Đang tải số dư...</p>
+            </div>
+          ) : error ? (
+            <div
+              className="relative overflow-hidden rounded-xl p-6 shadow-2xl border border-white/10 text-white"
+              style={{
+                backgroundColor: 'var(--color-primary-wallet)',
+                backgroundImage: `
+                  radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%),
+                  radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 0% 50%, hsla(260,82%,50%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 50%, hsla(262,82%,50%,1) 0, transparent 50%),
+                  radial-gradient(at 0% 100%, hsla(253,16%,7%,1) 0, transparent 50%),
+                  radial-gradient(at 50% 100%, hsla(225,39%,30%,1) 0, transparent 50%),
+                  radial-gradient(at 100% 100%, hsla(339,49%,30%,1) 0, transparent 50%)
+                `,
+              }}
+            >
+              <p className="mb-2 text-sm font-medium text-white/90">{error}</p>
+              <button
+                type="button"
+                onClick={refetch}
+                className="rounded-xl bg-white/20 px-4 py-2 text-sm font-medium hover:bg-white/30"
+              >
+                Thử lại
+              </button>
+            </div>
+          ) : (
+            <BalanceCard
+              totalUsd={`$${formatUsd(balance?.usdtBalance ?? 0)}`}
+              totalCrypto={`${(balance?.heroBalance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${tokenSymbol}`}
+              changePercent="—"
+              tokenSymbols={['USDT', tokenSymbol]}
+            />
+          )}
         </div>
 
-        {activeTab === 'tokens' && (
-          <div className="space-y-3 px-6 pt-4">
+        {/* Quick Actions */}
+        <div className="mt-8">
+          <ActionGrid />
+        </div>
+
+        {/* Assets */}
+        <div className="mt-10">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Tài sản</h3>
+            <Link href="/wallet/history" className="text-[var(--color-primary-wallet)] text-sm font-semibold">
+              Xem tất cả
+            </Link>
+          </div>
+          <div className="space-y-3">
             {!isConnected ? (
-              <p className="py-4 text-center text-sm text-slate-500">Kết nối ví để xem token.</p>
+              <p className="py-4 text-center text-sm text-slate-500">Kết nối ví để xem tài sản.</p>
             ) : loading ? (
               <p className="py-4 text-center text-sm text-slate-500">Đang tải...</p>
             ) : error ? (
@@ -112,7 +135,9 @@ export default function WalletPage() {
                   name="Tether USD"
                   symbol="USDT"
                   networkLabel="BEP-20"
-                  amount={`${(balance?.usdtBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  amount={`$${formatUsd(balance?.usdtBalance ?? 0)}`}
+                  change="0.0%"
+                  changeType="neutral"
                   onWithdraw={() => handleWithdraw('usdt')}
                 />
                 <TokenRow
@@ -120,21 +145,18 @@ export default function WalletPage() {
                   name={tokenName}
                   symbol={tokenSymbol}
                   networkLabel="BEP-20"
-                  amount={`${(balance?.heroBalance || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  amount={`${(balance?.heroBalance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
                 />
               </>
             )}
           </div>
-        )}
+        </div>
 
-        {activeTab === 'nfts' && <NFTsTab />}
-
-        {activeTab === 'history' && <HistoryTab />}
-
-        <div className="mt-6 px-6 pb-6">
+        {/* Rank section */}
+        <div className="px-0 pb-6 pt-6">
           <RankSection />
         </div>
-      </div>
+      </main>
 
       <WithdrawModal
         isOpen={withdrawModalOpen}

@@ -18,11 +18,27 @@
   /* Gradient nhẹ (dùng cho logo/hero, không chói) */
   --color-accent-from: #3b82f6;
   --color-accent-to: #6366f1;
+  /* Wallet / Aetheria premium */
+  --color-primary-wallet: #330df2;
+  --color-background-dark: #0a0910;
+  --color-surface-dark: #131022;
+  --color-border-dark: #1f1b3d;
 }
 
 :root {
   --background: var(--color-background);
   --foreground: var(--color-text);
+}
+
+/* Dark theme */
+html.dark {
+  --color-background: #0a0910;
+  --color-surface: #131022;
+  --color-border: #1f1b3d;
+  --color-text: #f1f5f9;
+  --color-text-muted: #94a3b8;
+  --color-surface-light: #1a1625;
+  --color-accent-dark: #f1f5f9;
 }
 
 html {
@@ -45,6 +61,11 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border);
+}
+
+html.dark .glass-light {
+  background: rgba(19, 16, 34, 0.9);
+  border-bottom-color: var(--color-border-dark);
 }
 
 .soft-shadow {
@@ -102,4 +123,36 @@ body {
 
 .bottom-nav-shadow {
   box-shadow: 0 -4px 20px rgb(0 0 0 / 0.04);
+}
+
+/* Explore – glass cards & active filter */
+.glass-card {
+  background: rgba(51, 13, 242, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+html.dark .glass-card {
+  background: rgba(51, 13, 242, 0.08);
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.active-filter {
+  background: linear-gradient(135deg, var(--color-primary-wallet) 0%, #6366f1 100%);
+  color: white;
+  box-shadow: 0 4px 14px rgba(51, 13, 242, 0.35);
+}
+
+.gradient-button {
+  background: linear-gradient(135deg, var(--color-primary-wallet) 0%, #7000ff 100%);
+  box-shadow: 0 10px 25px -5px rgba(51, 13, 242, 0.3);
+}
+
+/* Same as reference: subtle glass (white tint) */
+.glass-card-subtle {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

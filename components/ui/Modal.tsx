@@ -9,9 +9,10 @@ interface ModalProps {
     onClose: () => void;
     title?: string;
     children: React.ReactNode;
+    className?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, className = '' }: ModalProps) {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -33,24 +34,31 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
             <div
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
                 onClick={onClose}
+                aria-hidden
             />
-            <div className="relative w-full max-w-md transform overflow-hidden rounded-3xl bg-white p-6 text-left shadow-xl transition-all">
-                <div className="flex items-center justify-between mb-5">
-                    {title && (
-                        <h3 className="text-xl font-bold leading-6 text-slate-900">
+            <div
+                className={`relative w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-[var(--color-surface)] p-6 text-left shadow-xl dark:border-[var(--color-border-dark)] dark:bg-[var(--color-surface-dark)] ${className}`}
+                role="dialog"
+                aria-modal
+            >
+                <div className="flex items-center justify-between gap-3 mb-5">
+                    {title ? (
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">
                             {title}
                         </h3>
+                    ) : (
+                        <span />
                     )}
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="flex size-8 items-center justify-center rounded-full hover:bg-slate-100"
+                        className="flex size-10 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/10 dark:hover:text-slate-200"
+                        aria-label="Đóng"
                     >
-                        <X className="h-5 w-5 text-slate-500" />
+                        <X className="h-5 w-5" />
                     </button>
                 </div>
-                <div>
-                    {children}
-                </div>
+                <div>{children}</div>
             </div>
         </div>,
         document.body

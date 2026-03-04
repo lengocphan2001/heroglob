@@ -42,6 +42,16 @@ export class UsersService {
     return this.findByWalletAddress(walletAddress);
   }
 
+  /**
+   * Find user by wallet, or create one with minimal info (e.g. when order is placed before registration).
+   * Used so product-order payouts can always be scheduled.
+   */
+  async findOrCreateByWallet(walletAddress: string): Promise<User> {
+    const existing = await this.findByWalletAddress(walletAddress);
+    if (existing) return existing;
+    return this.createWithWallet(walletAddress.trim());
+  }
+
   private generateReferralCode(): string {
     return Math.random().toString(36).substring(2, 8).toUpperCase();
   }
@@ -165,15 +175,19 @@ export class UsersService {
     return this.userRepo.findOne({ where: { id } });
   }
 
+  /** Credit or debit in-app token (HERO) balance. */
   async updateBalance(id: number, change: number): Promise<void> {
-    // Basic implementation; for production consider transactions or query builder increment
     const user = await this.findOne(id);
     if (!user) return;
-    // ensure floating point math is handled reasonably well, or rely on JS number (double precision)
-    // heroBalance is string in entity? No, it's number (decimal).
-    // TypeORM returns decimal columns as strings usually, but entity defined as number.
-    // Let's assume number.
     user.heroBalance = Number(user.heroBalance) + change;
+    await this.userRepo.save(user);
+  }
+
+  /** Credit or debit in-app USDT balance. */
+  async updateUsdtBalance(id: number, change: number): Promise<void> {
+    const user = await this.findOne(id);
+    if (!user) return;
+    user.usdtBalance = Number(user.usdtBalance) + change;
     await this.userRepo.save(user);
   }
 }

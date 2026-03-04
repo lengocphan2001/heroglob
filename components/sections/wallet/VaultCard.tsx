@@ -1,4 +1,5 @@
-import { ShieldCheck } from 'lucide-react';
+import Link from 'next/link';
+import { Lock } from 'lucide-react';
 import { useConfig } from '@/contexts/ConfigContext';
 
 type Props = {
@@ -8,19 +9,25 @@ type Props = {
 
 export function VaultCard({
   title,
-  subtitle = 'Biometric protection active',
+  subtitle = 'Earn up to 12% APY on your idle assets.',
 }: Props) {
   const { projectName } = useConfig();
   const displayTitle = title || `${projectName} Vault`;
   return (
-    <div className="flex items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
-      <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--color-primary)]/10">
-        <ShieldCheck className="size-5 text-[var(--color-primary)]" aria-hidden />
+    <div className="bg-gradient-to-r from-[var(--color-primary-wallet)]/20 to-[var(--color-primary-wallet)]/5 rounded-xl border border-[var(--color-primary-wallet)]/30 p-5 flex items-center gap-4">
+      <div className="size-12 rounded-xl bg-[var(--color-primary-wallet)] flex items-center justify-center shrink-0">
+        <Lock className="size-6 text-white" aria-hidden />
       </div>
-      <div>
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-900">{displayTitle}</p>
-        <p className="text-xs text-slate-500">{subtitle}</p>
+      <div className="flex-1 min-w-0">
+        <h4 className="font-bold text-[var(--color-primary-wallet)]">{displayTitle}</h4>
+        <p className="text-xs text-slate-500 dark:text-slate-400">{subtitle}</p>
       </div>
+      <Link
+        href="/staking"
+        className="bg-[var(--color-primary-wallet)] text-white text-xs font-bold px-4 py-2 rounded-lg hover:brightness-110 transition-all shrink-0"
+      >
+        Stake
+      </Link>
     </div>
   );
 }

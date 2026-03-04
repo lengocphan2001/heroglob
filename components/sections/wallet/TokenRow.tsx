@@ -6,7 +6,6 @@ export type TokenRowProps = {
   iconUrl: string;
   name: string;
   symbol: string;
-  /** Nhãn mạng, vd: BEP20, ERC20 */
   networkLabel?: string;
   amount: string;
   change?: string;
@@ -14,10 +13,10 @@ export type TokenRowProps = {
   onWithdraw?: () => void;
 };
 
-const changeClass = {
-  positive: 'text-emerald-600',
-  negative: 'text-rose-500',
-  neutral: 'text-slate-400',
+const changeColors = {
+  positive: { color: '#34d399' },
+  negative: { color: '#f87171' },
+  neutral: { color: '#64748b' },
 };
 
 export function TokenRow({
@@ -31,31 +30,32 @@ export function TokenRow({
   changeType = 'neutral',
   onWithdraw,
 }: TokenRowProps) {
-  const symbolLine = networkLabel ? `${symbol} (${networkLabel})` : symbol;
+  const symbolLine = networkLabel ? `${symbol} · ${networkLabel}` : symbol;
+
   const content = (
     <>
-      <div className="flex items-center gap-4">
-        <div className="flex size-12 items-center justify-center overflow-hidden rounded-full border border-slate-100 bg-slate-50 p-1">
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
           <img
             src={iconUrl}
             alt={`${symbol} icon`}
-            className="size-full object-cover"
-            onError={(e) => {
-              // Fallback to a placeholder if image fails to load
-              e.currentTarget.src = '/file.svg';
-            }}
+            className="size-8 object-cover"
+            onError={(e) => { e.currentTarget.src = '/file.svg'; }}
           />
         </div>
         <div>
-          <p className="font-bold text-slate-900">{name}</p>
-          <p className="text-xs font-medium text-slate-400">{symbolLine}</p>
+          <p className="font-bold text-slate-900 dark:text-slate-100">{name}</p>
+          <p className="text-xs text-slate-500">{symbolLine}</p>
         </div>
       </div>
+
       <div className="flex items-center gap-3">
         <div className="text-right">
-          <p className="font-bold text-slate-900">{amount}</p>
+          <p className="font-bold text-slate-900 dark:text-slate-100">{amount}</p>
           {change != null && (
-            <p className={`text-[10px] font-bold ${changeClass[changeType]}`}>{change}</p>
+            <p className="text-[10px] font-bold" style={changeColors[changeType]}>
+              {change}
+            </p>
           )}
         </div>
         {onWithdraw && (
@@ -66,24 +66,24 @@ export function TokenRow({
               e.stopPropagation();
               onWithdraw();
             }}
-            className="flex items-center gap-1 rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-primary-wallet)]/30 bg-[var(--color-primary-wallet)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110 active:scale-[0.98]"
           >
-            Rút
-            <ArrowUpRight className="h-3 w-3" />
+            <span>Rút</span>
+            <ArrowUpRight className="h-4 w-4 shrink-0" strokeWidth={2.5} />
           </button>
         )}
       </div>
     </>
   );
 
-  const className =
-    'flex cursor-pointer items-center justify-between rounded-2xl border border-slate-100 bg-white p-3 shadow-sm transition-all hover:border-[var(--color-primary)]/20';
+  const rowClass =
+    'flex cursor-pointer items-center justify-between rounded-xl border p-4 transition-all bg-slate-100 dark:bg-[var(--color-surface-dark)] border-transparent dark:border-[var(--color-border-dark)] hover:border-[var(--color-primary-wallet)]/30';
 
   return href && !onWithdraw ? (
-    <Link href={href} className={className}>
+    <Link href={href} className={rowClass}>
       {content}
     </Link>
   ) : (
-    <div className={className}>{content}</div>
+    <div className={rowClass}>{content}</div>
   );
 }

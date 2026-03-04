@@ -4,8 +4,13 @@ export type Payout = {
     id: number;
     userId: number;
     investmentId: number | null;
-    amount: number;
-    txHash?: string;
+    orderId: number | null;
+    walletAddress?: string | null;
+    amount: number | string;
+    txHash?: string | null;
+    type: string;
+    scheduledAt: string | null;
+    status: string;
     createdAt: string;
     user?: {
         walletAddress?: string;

@@ -30,6 +30,9 @@ export class Investment {
     @Column({ type: 'decimal', precision: 5, scale: 2, name: 'daily_profit_percent' })
     dailyProfitPercent!: number;
 
+    @Column({ type: 'int', default: 1, name: 'duration_days' })
+    durationDays!: number;
+
     @CreateDateColumn({ name: 'created_at' })
     createdAt!: Date;
 

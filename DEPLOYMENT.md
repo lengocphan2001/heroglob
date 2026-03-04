@@ -125,9 +125,9 @@ PORT=4001
 # Database
 DB_HOST=localhost
 DB_PORT=3306
-DB_USERNAME=heroglob_user
+DB_USER=heroglob_user
 DB_PASSWORD=password
-DB_DATABASE=heroglob
+DB_NAME=heroglob
 DB_SYNCHRONIZE=false
 DB_LOGGING=false
 

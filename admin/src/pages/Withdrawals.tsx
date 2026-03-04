@@ -6,9 +6,11 @@ import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { Badge } from '../components/ui/Badge';
 import { withdrawalsApi, type Withdrawal } from '../api/withdrawals';
+import { useTokenConfig } from '../contexts/ConfigContext';
 import { Check, X, ExternalLink } from 'lucide-react';
 
 export function Withdrawals() {
+    const { tokenSymbol } = useTokenConfig();
     const [list, setList] = useState<Withdrawal[]>([]);
     const [loading, setLoading] = useState(true);
     const [processing, setProcessing] = useState(false);
@@ -74,7 +76,7 @@ export function Withdrawals() {
                     Quản lý Rút tiền
                 </h1>
                 <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-                    Xử lý các yêu cầu rút USDT/HERO của người dùng
+                    Xử lý các yêu cầu rút USDT/{tokenSymbol} của người dùng
                 </p>
             </div>
 

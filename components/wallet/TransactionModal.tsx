@@ -47,7 +47,7 @@ export function TransactionModal({
       icon: isPreConfirm ? (
         <TriangleAlert className="size-12 text-amber-500" aria-hidden />
       ) : (
-        <Loader2 className="size-12 animate-spin text-[var(--color-primary)]" aria-hidden />
+        <Loader2 className="size-12 animate-spin text-[var(--color-primary-wallet)]" aria-hidden />
       ),
       title: isPreConfirm ? 'Đọc kỹ trước khi mở ví' : 'Chờ xác nhận',
       message: isPreConfirm
@@ -86,30 +86,34 @@ export function TransactionModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
-      role="dialog"
-      aria-modal
-      aria-labelledby="tx-modal-title"
-    >
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+        aria-hidden
+      />
+      <div
+        className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-slate-200 bg-[var(--color-surface)] p-6 shadow-xl dark:border-[var(--color-border-dark)] dark:bg-[var(--color-surface-dark)]"
+        role="dialog"
+        aria-modal
+        aria-labelledby="tx-modal-title"
+      >
         <div className="flex flex-col items-center text-center">
           <div className="mb-4 flex justify-center">{config.icon}</div>
-          <h3 id="tx-modal-title" className="text-lg font-bold text-slate-900">
+          <h3 id="tx-modal-title" className="text-lg font-bold text-slate-900 dark:text-slate-100">
             {config.title}
           </h3>
-          <p className="mt-2 text-sm text-slate-600">{config.message}</p>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{config.message}</p>
 
-
-          <div className="mt-3 rounded-xl bg-slate-50 px-4 py-2">
-            <p className="text-sm font-medium text-slate-700">
-              Số tiền: <strong>{amountDisplay} {tokenLabel}</strong>
+          <div className="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-[var(--color-border-dark)] dark:bg-white/5">
+            <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
+              Số tiền: <strong className="text-slate-900 dark:text-slate-100">{amountDisplay} {tokenLabel}</strong>
             </p>
             {productTitle && (
-              <p className="mt-0.5 text-xs text-slate-500">{productTitle}</p>
+              <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{productTitle}</p>
             )}
             {status === 'confirming' && !isPreConfirm && (
-              <p className="mt-1.5 text-xs text-slate-500">
+              <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">
                 Trên ví có thể hiển thị số khác; số tiền thực tế là {amountDisplay} {tokenLabel}.
               </p>
             )}
@@ -119,7 +123,7 @@ export function TransactionModal({
               href={explorerTxUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 text-xs font-medium text-[var(--color-primary)]"
+              className="mt-3 inline-block text-xs font-medium text-[var(--color-primary-wallet)] hover:underline"
             >
               Xem trên Explorer
             </a>
@@ -131,11 +135,15 @@ export function TransactionModal({
                   type="button"
                   onClick={handleOpenWallet}
                   disabled={openingWallet}
-                  className="w-full rounded-xl bg-[var(--color-primary)] py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-hover)] disabled:opacity-60"
+                  className="w-full rounded-xl bg-[var(--color-primary-wallet)] py-3.5 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-wallet)]/25 transition hover:brightness-110 disabled:opacity-60"
                 >
                   {openingWallet ? 'Đang mở ví…' : 'Mở ví để thanh toán'}
                 </button>
-                <button type="button" onClick={onClose} className="w-full py-2 text-sm text-slate-500 hover:text-slate-700">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="w-full py-2.5 text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+                >
                   Hủy
                 </button>
               </>
@@ -143,7 +151,7 @@ export function TransactionModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="w-full rounded-xl bg-[var(--color-primary)] py-3 text-sm font-bold text-white hover:bg-[var(--color-primary-hover)]"
+                className="w-full rounded-xl bg-[var(--color-primary-wallet)] py-3.5 text-sm font-bold text-white shadow-lg shadow-[var(--color-primary-wallet)]/25 transition hover:brightness-110"
               >
                 {status === 'success' || status === 'error' ? 'Đóng' : 'Hủy'}
               </button>

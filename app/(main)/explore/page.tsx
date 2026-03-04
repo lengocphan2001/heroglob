@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { Search, SlidersHorizontal, ArrowRight } from 'lucide-react';
-import { CategoryPills } from '@/components/ui';
-import { ProductCard } from '@/components/sections';
+import { Search } from 'lucide-react';
+import { ExploreProductCard } from '@/components/sections';
 import { TransactionModal } from '@/components/wallet/TransactionModal';
 import type { TxStatus } from '@/components/wallet/TransactionModal';
 import { getCategories } from '@/lib/api/categories';
@@ -12,7 +11,7 @@ import { getProducts, type Product } from '@/lib/api/products';
 import { createOrder } from '@/lib/api/orders';
 import { useWallet } from '@/contexts/WalletContext';
 import { useConfig } from '@/contexts/ConfigContext';
-import { getUsdtAddress, getUsdtDecimals, HERO_TOKEN } from '@/lib/wallet/tokens';
+import { getUsdtAddress, getUsdtDecimals } from '@/lib/wallet/tokens';
 import { sendTokenTransfer, toRawAmount, waitForTransaction, checkBalance } from '@/lib/wallet/transfer';
 
 import { formatPriceDisplay } from '@/lib/formatPrice';
@@ -30,14 +29,14 @@ function getExplorerTxUrl(chainId: string | null, txHash: string): string {
 
 export default function ExplorePage() {
   const { isConnected, address, chainId } = useWallet();
-  const { tokenSymbol, paymentReceiverAddress } = useConfig();
+  const { paymentReceiverAddress } = useConfig();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [categories, setCategories] = useState<{ id: string; label: string }[]>([{ id: 'all', label: 'Tất cả' }]);
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [buying, setBuying] = useState<{ id: number; type: 'usdt' | 'hero' } | null>(null);
+  const [buying, setBuying] = useState<{ id: number; type: 'usdt' } | null>(null);
   const [txModal, setTxModal] = useState<{
     open: boolean;
     status: TxStatus;
@@ -153,73 +152,8 @@ export default function ExplorePage() {
     [isConnected, address, chainId, paymentReceiverAddress],
   );
 
-  const handleBuyHero = useCallback(
-    async (product: Product) => {
-      if (!isConnected || !address) {
-        alert('Vui lòng kết nối ví.');
-        return;
-      }
-      if (!paymentReceiverAddress) {
-        alert('Chưa cấu hình địa chỉ nhận thanh toán.');
-        return;
-      }
-      const ethereum = getEthereum();
-      if (!ethereum) {
-        alert('Không tìm thấy ví.');
-        return;
-      }
-      const priceHero = product.priceHero ?? '0';
-      if (parseFloat(priceHero) <= 0) return;
-      const amountDisplay = formatPriceDisplay(priceHero);
-      setBuying({ id: product.id, type: 'hero' });
-      setTxModal({
-        open: true,
-        status: 'confirming',
-        amountDisplay,
-        tokenLabel: tokenSymbol, // Use dynamic token symbol
-        productTitle: product.title,
-        onConfirmTransfer: async () => {
-          try {
-            const raw = toRawAmount(priceHero, 18);
-
-            await checkBalance(ethereum, address, HERO_TOKEN.address, raw);
-
-            const txHash = await sendTokenTransfer(
-              ethereum,
-              address,
-              HERO_TOKEN.address,
-              paymentReceiverAddress,
-              raw,
-            );
-            setTxModal((m) => ({ ...m, status: 'pending', txHash }));
-
-            await waitForTransaction(ethereum, txHash);
-
-            await createOrder({
-              productId: product.id,
-              walletAddress: address,
-              tokenType: 'hero',
-              amount: amountDisplay,
-              txHash,
-            });
-            setTxModal((m) => ({ ...m, status: 'success' }));
-          } catch (err) {
-            setTxModal((m) => ({
-              ...m,
-              status: 'error',
-              error: err instanceof Error ? err.message : 'Giao dịch thất bại',
-            }));
-          } finally {
-            setBuying(null);
-          }
-        },
-      });
-    },
-    [isConnected, address, tokenSymbol, paymentReceiverAddress],
-  );
-
   return (
-    <div className="bg-white">
+    <div className="flex-1 w-full max-w-7xl mx-auto pb-24 bg-slate-100 dark:bg-[var(--color-background-dark)] min-h-full">
       <TransactionModal
         open={txModal.open}
         status={txModal.status}
@@ -237,75 +171,78 @@ export default function ExplorePage() {
           setBuying(null);
         }}
       />
-      <div className="px-4 py-4">
-        <div className="flex gap-3">
-          <div className="relative flex-1">
-            <Search
-              className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400"
-              aria-hidden
-            />
-            <input
-              type="search"
-              placeholder="Tìm kiếm bộ sưu tập..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-12 w-full rounded-xl border-none bg-[var(--color-surface-light)] pl-11 pr-4 text-base text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-[var(--color-primary)]/20 focus:outline-none"
-              aria-label="Search collections"
-            />
-          </div>
-          <button
-            type="button"
-            className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-accent-dark)] text-white shadow-lg shadow-black/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/20"
-            aria-label="Filter"
-          >
-            <SlidersHorizontal className="size-6" />
-          </button>
+
+      {/* Search bar */}
+      <div className="px-4 pt-6">
+        <div className="relative">
+          <Search
+            className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-400"
+            aria-hidden
+          />
+          <input
+            type="search"
+            placeholder="Search collections, items, artists..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full bg-slate-100 dark:bg-[var(--color-primary-wallet)]/5 border border-slate-200 dark:border-[var(--color-primary-wallet)]/10 rounded-xl py-3 pl-12 pr-4 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:ring-2 focus:ring-[var(--color-primary-wallet)] focus:border-transparent outline-none transition-all"
+            aria-label="Tìm bộ sưu tập"
+          />
         </div>
       </div>
 
-      <div className="px-4">
-        <CategoryPills
-          categories={categories}
-          activeId={activeCategory}
-          onSelect={setActiveCategory}
-        />
+      {/* Filters */}
+      <div className="flex gap-3 px-4 py-6 overflow-x-auto hide-scrollbar">
+        {categories.map((cat) => {
+          const isActive = activeCategory === cat.id;
+          return (
+            <button
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveCategory(cat.id)}
+              className={`shrink-0 px-6 py-2 rounded-full text-sm font-semibold transition-all ${
+                isActive
+                  ? 'active-filter text-white shadow-lg shadow-[var(--color-primary-wallet)]/20'
+                  : 'bg-slate-100 dark:bg-[var(--color-primary-wallet)]/10 border border-slate-200 dark:border-[var(--color-primary-wallet)]/20 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-[var(--color-primary-wallet)]/20'
+              }`}
+            >
+              {cat.label}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="flex items-center justify-between px-4 pt-6 pb-4">
-        <h3 className="text-lg font-bold tracking-tight text-slate-900">
-          Sản phẩm nổi bật
-        </h3>
+      {/* Section title */}
+      <div className="px-4 mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+          Dynamic Drops
+        </h2>
         <Link
           href="/explore/featured"
-          className="flex items-center gap-1 text-sm font-bold text-[var(--color-primary)] hover:underline"
+          className="text-[var(--color-primary-wallet)] text-sm font-semibold hover:underline"
         >
           Xem tất cả
-          <ArrowRight className="size-4" />
         </Link>
       </div>
 
       {error && (
-        <p className="px-4 pb-4 text-sm text-red-600">{error}</p>
+        <p className="px-4 pb-4 text-sm text-red-500">{error}</p>
       )}
 
       {loading ? (
-        <p className="px-4 pb-8 text-center text-slate-500">Đang tải...</p>
+        <p className="px-4 pb-8 text-center text-slate-500 dark:text-slate-400">Đang tải...</p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 px-4 pb-8">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4">
           {filtered.length === 0 ? (
-            <p className="col-span-2 py-8 text-center text-slate-500">
+            <p className="col-span-2 py-12 text-center text-slate-500 dark:text-slate-400">
               Chưa có sản phẩm nào.
             </p>
           ) : (
             filtered.map((p) => (
-              <ProductCard
+              <ExploreProductCard
                 key={p.id}
                 product={p}
                 onBuyUsdt={handleBuyUsdt}
-                onBuyHero={handleBuyHero}
-                isBuying={
-                  buying?.id === p.id ? buying.type : null
-                }
+                isBuying={buying?.id === p.id ? buying.type : null}
               />
             ))
           )}

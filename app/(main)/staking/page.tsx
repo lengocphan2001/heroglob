@@ -64,7 +64,7 @@ export default function StakingPage() {
                 <button onClick={() => router.back()} className="text-slate-900 flex size-12 shrink-0 items-center">
                     <ArrowLeft className="w-6 h-6" />
                 </button>
-                <h2 className="text-slate-900 text-lg font-bold flex-1 text-center">Staking</h2>
+                <h2 className="text-slate-900 dark:text-slate-100 text-lg font-bold flex-1 text-center">Gửi tiền</h2>
                 <div className="w-12"></div>
             </div>
 
@@ -81,12 +81,12 @@ export default function StakingPage() {
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
                                     <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Đã Stake</p>
                                     <p className="text-2xl font-bold text-slate-900">{totalStaked.toFixed(2)}</p>
-                                    <p className="text-xs text-slate-400 font-medium">HERO</p>
+                                    <p className="text-xs text-slate-400 font-medium">{tokenSymbol}</p>
                                 </div>
                                 <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
                                     <p className="text-slate-500 text-xs uppercase mb-1 font-semibold tracking-wider">Tổng Phần Thưởng</p>
                                     <p className="text-2xl font-bold text-[#330df2]">{totalRewards.toFixed(2)}</p>
-                                    <p className="text-xs text-slate-400 font-medium">HERO</p>
+                                    <p className="text-xs text-slate-400 font-medium">{tokenSymbol}</p>
                                 </div>
                             </div>
 

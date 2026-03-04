@@ -203,6 +203,31 @@ export function Settings() {
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <Input
+                label="Địa chỉ Token (Contract Address)"
+                placeholder="0x..."
+                value={configs['PROJECT_TOKEN_ADDRESS'] || ''}
+                onChange={(e) =>
+                  setConfigs({
+                    ...configs,
+                    PROJECT_TOKEN_ADDRESS: e.target.value,
+                  })
+                }
+              />
+            </div>
+            <Button
+              variant="primary"
+              onClick={() =>
+                handleSave('PROJECT_TOKEN_ADDRESS', configs['PROJECT_TOKEN_ADDRESS'])
+              }
+              disabled={loading}
+            >
+              Lưu
+            </Button>
+          </div>
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Input
                 label="Địa chỉ ví nhận tiền (Payment Receiver)"
                 value={configs['PAYMENT_RECEIVER_ADDRESS'] || ''}
                 onChange={(e) =>

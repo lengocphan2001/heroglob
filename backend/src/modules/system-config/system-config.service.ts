@@ -19,7 +19,14 @@ export class SystemConfigService implements OnModuleInit {
             INVESTMENT_PROFIT_PERCENT: '1', // 1%
             PROJECT_TOKEN_NAME: 'Hero Coin',
             PROJECT_TOKEN_SYMBOL: 'HERO',
+            PROJECT_TOKEN_ADDRESS: process.env.PROJECT_TOKEN_ADDRESS || '',
             PAYMENT_RECEIVER_ADDRESS: process.env.PAYMENT_RECEIVER_ADDRESS || '',
+            // Payout time (UTC): hour 0 = midnight, minute 0
+            PAYOUT_UTC_HOUR: '0',
+            PAYOUT_UTC_MINUTE: '0',
+            // Product purchase: daily payout for N days, daily percent of order amount
+            PRODUCT_PURCHASE_PAYOUT_DAYS: '30',
+            PRODUCT_PURCHASE_DAILY_PERCENT: '0.1',
         };
 
         for (const [key, value] of Object.entries(defaults)) {

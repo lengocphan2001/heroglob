@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
+import { InvestmentsService } from '../investments/investments.service';
 
 function generateHashId(): string {
   return randomBytes(12).toString('base64url');
@@ -15,6 +16,7 @@ export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly repo: Repository<Product>,
+    private readonly investmentsService: InvestmentsService,
   ) { }
 
   async findAll(category?: string): Promise<Product[]> {
@@ -68,6 +70,8 @@ export class ProductsService {
       category: dto.category ?? 'all',
       live: dto.live ?? false,
       stock: dto.stock ?? 0,
+      dailyHeroReward: dto.dailyHeroReward ?? '0',
+      maxHeroReward: dto.maxHeroReward ?? '0',
     });
     return this.repo.save(product);
   }
@@ -87,8 +91,20 @@ export class ProductsService {
       ...(dto.category !== undefined && { category: dto.category }),
       ...(dto.live !== undefined && { live: dto.live }),
       ...(dto.stock !== undefined && { stock: dto.stock }),
+      ...(dto.dailyHeroReward !== undefined && { dailyHeroReward: dto.dailyHeroReward }),
+      ...(dto.maxHeroReward !== undefined && { maxHeroReward: dto.maxHeroReward }),
     });
-    return this.repo.save(product);
+    const saved = await this.repo.save(product);
+    // When Daily HERO Reward is updated, fix existing pending order payouts so they show the new amount (e.g. Order #15).
+    if (dto.dailyHeroReward !== undefined) {
+      const newDaily = Number(saved.dailyHeroReward) || 0;
+      if (newDaily > 0) {
+        this.investmentsService.updatePendingOrderPayoutAmountsForProduct(id, newDaily).catch((e) => {
+          console.error('Error updating pending order payouts for product', id, e);
+        });
+      }
+    }
+    return saved;
   }
 
   async remove(id: number): Promise<void> {

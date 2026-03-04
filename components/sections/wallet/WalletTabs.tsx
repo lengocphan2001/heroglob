@@ -3,8 +3,8 @@
 type TabId = 'tokens' | 'nfts' | 'history';
 
 const tabs: { id: TabId; label: string }[] = [
-  { id: 'tokens', label: 'Token' },
-  { id: 'nfts', label: 'NFTs' },
+  { id: 'tokens', label: 'Tài sản' },
+  { id: 'nfts', label: 'NFT' },
   { id: 'history', label: 'Lịch sử' },
 ];
 
@@ -15,7 +15,7 @@ type Props = {
 
 export function WalletTabs({ activeId, onSelect }: Props) {
   return (
-    <div className="flex gap-8 px-8">
+    <div className="flex gap-1 px-4">
       {tabs.map((tab) => {
         const isActive = activeId === tab.id;
         return (
@@ -25,10 +25,12 @@ export function WalletTabs({ activeId, onSelect }: Props) {
             role="tab"
             aria-selected={isActive}
             onClick={() => onSelect(tab.id)}
-            className={`flex flex-col items-center justify-center border-b-2 pb-3 text-sm font-bold tracking-wide transition-colors ${isActive
-              ? 'border-[var(--color-primary)] text-slate-900'
-              : 'border-transparent text-slate-400 hover:text-slate-600'
-              }`}
+            className="flex-1 rounded-xl py-2.5 text-sm font-bold tracking-wide transition-all"
+            style={
+              isActive
+                ? { background: '#330df2', color: '#fff', boxShadow: '0 4px 14px rgba(51,13,242,0.35)' }
+                : { color: '#64748b', background: 'transparent' }
+            }
           >
             {tab.label}
           </button>

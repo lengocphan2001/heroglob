@@ -25,6 +25,7 @@ import {
 } from '../api/products';
 import { getCategories } from '../api/categories';
 import { formatPriceDisplay } from '../utils/formatPrice';
+import { useTokenConfig } from '../contexts/ConfigContext';
 
 const defaultForm: CreateProductPayload = {
   title: '',
@@ -43,6 +44,7 @@ const defaultForm: CreateProductPayload = {
 };
 
 export function Products() {
+  const { tokenSymbol } = useTokenConfig();
   const [list, setList] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -224,7 +226,7 @@ export function Products() {
                 <TableHead>Tiêu đề</TableHead>
                 <TableHead>Creator</TableHead>
                 <TableHead>USDT</TableHead>
-                <TableHead>HERO</TableHead>
+                <TableHead>{tokenSymbol}</TableHead>
                 <TableHead>Danh mục</TableHead>
                 <TableHead>Live</TableHead>
                 <TableHead className="text-right">Thao tác</TableHead>
@@ -255,7 +257,7 @@ export function Products() {
                       {formatPriceDisplay(p.priceUsdt ?? '0')} USDT
                     </TableCell>
                     <TableCell>
-                      {formatPriceDisplay(p.priceHero ?? '0')} HERO
+                      {formatPriceDisplay(p.priceHero ?? '0')} {tokenSymbol}
                     </TableCell>
                     <TableCell>{p.category}</TableCell>
                     <TableCell>
@@ -424,7 +426,7 @@ export function Products() {
               placeholder="0"
             />
             <Input
-              label="Giá HERO"
+              label={`Giá ${tokenSymbol}`}
               name="priceHero"
               type="text"
               inputMode="decimal"
@@ -500,25 +502,25 @@ export function Products() {
 
           <div className="grid grid-cols-2 gap-4">
             <Input
-              label="Daily HERO Reward"
+              label={`Daily ${tokenSymbol} Reward`}
               name="dailyHeroReward"
               type="number"
               step="0.000001"
               value={form.dailyHeroReward ?? '0'}
               onChange={(e) => setForm((f) => ({ ...f, dailyHeroReward: e.target.value }))}
               placeholder="0"
-              helperText="HERO mỗi NFT nhận mỗi ngày"
+              helperText={`${tokenSymbol} mỗi NFT nhận mỗi ngày`}
             />
 
             <Input
-              label="Max HERO Reward"
+              label={`Max ${tokenSymbol} Reward`}
               name="maxHeroReward"
               type="number"
               step="0.000001"
               value={form.maxHeroReward ?? '0'}
               onChange={(e) => setForm((f) => ({ ...f, maxHeroReward: e.target.value }))}
               placeholder="0"
-              helperText="Tổng HERO tối đa mỗi NFT"
+              helperText={`Tổng ${tokenSymbol} tối đa mỗi NFT`}
             />
           </div>
 

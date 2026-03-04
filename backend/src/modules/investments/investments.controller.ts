@@ -14,6 +14,16 @@ export class InvestmentsController {
     }
 
     @UseGuards(AuthGuard('jwt'))
+    @Post('activate-with-payment')
+    activateWithPayment(
+        @Req() req,
+        @Body() body: { packageId: number; txHash: string; amount: string },
+    ) {
+        const userId = parseInt(req.user.id, 10);
+        return this.investmentsService.activateWithPayment(userId, body);
+    }
+
+    @UseGuards(AuthGuard('jwt'))
     @Get('payouts')
     getPayouts() {
         return this.investmentsService.getAllPayouts();

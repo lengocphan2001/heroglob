@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Req } from '@nestjs/common';
+import { Controller, Get, UseGuards, Req, Param, NotFoundException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UsersService } from './users.service';
 
@@ -22,5 +22,15 @@ export class UsersController {
             heroBalance: Number(user.heroBalance),
             usdtBalance: Number(user.usdtBalance),
         };
+    }
+
+    @Get(':id')
+    async findOne(@Param('id') id: string, @Req() req) {
+        if (req.user?.role !== 'admin') {
+            throw new NotFoundException();
+        }
+        const user = await this.usersService.findOne(parseInt(id, 10));
+        if (!user) throw new NotFoundException('User not found');
+        return user;
     }
 }

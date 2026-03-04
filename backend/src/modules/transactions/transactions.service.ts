@@ -80,9 +80,9 @@ export class TransactionsService {
             });
         }
 
-        // Get payouts (investment & rank rewards)
+        // Get payouts (investment & rank rewards) – only paid (credited to user)
         const payouts = await this.payoutRepo.find({
-            where: { userId },
+            where: { userId, status: 'paid' },
             order: { createdAt: 'DESC' },
             take: 50,
         });
@@ -93,18 +93,23 @@ export class TransactionsService {
                 description = 'Thưởng hạng';
             } else if (payout.type === 'investment_daily') {
                 description = 'Lợi nhuận đầu tư';
+            } else if (payout.type === 'order_daily') {
+                description = 'Thưởng mua sản phẩm';
             }
 
+            // Package payouts are USDT in-app; product and rank payouts are token (HERO) in-app.
+            const tokenType = payout.type === 'investment_daily' ? 'usdt' : 'hero';
             transactions.push({
                 id: `payout-${payout.id}`,
                 type: 'payout',
                 amount: Number(payout.amount),
-                tokenType: 'hero',
+                tokenType,
                 description,
                 createdAt: payout.createdAt,
                 metadata: {
                     payoutType: payout.type,
                     investmentId: payout.investmentId,
+                    orderId: payout.orderId ?? undefined,
                 },
             });
         }
