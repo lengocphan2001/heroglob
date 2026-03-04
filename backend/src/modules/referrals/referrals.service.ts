@@ -4,6 +4,7 @@ import { randomBytes } from 'crypto';
 import { Repository } from 'typeorm';
 import { ReferralCode } from './entities/referral-code.entity';
 import { Referral } from './entities/referral.entity';
+import { UsersService } from '../users/users.service';
 
 function generateCode(): string {
   return randomBytes(5).toString('base64url').slice(0, 8).replace(/[-_]/g, 'x');
@@ -16,6 +17,7 @@ export class ReferralsService {
     private readonly codeRepo: Repository<ReferralCode>,
     @InjectRepository(Referral)
     private readonly referralRepo: Repository<Referral>,
+    private readonly usersService: UsersService,
   ) { }
 
   private async ensureCode(code: string): Promise<string> {
@@ -30,8 +32,28 @@ export class ReferralsService {
     return randomBytes(8).toString('base64url').slice(0, 12);
   }
 
+  /** Returns the same referral code as in users.referral_code (admin "Mã giới thiệu"). */
   async getOrCreateCode(walletAddress: string): Promise<{ code: string }> {
     const normalized = walletAddress.trim().toLowerCase();
+
+    // Prefer the user's referral code from users table (single source of truth with admin)
+    const user = await this.usersService.findByWalletAddress(walletAddress);
+    if (user?.referralCode?.trim()) {
+      const userCode = user.referralCode.trim();
+      let row = await this.codeRepo.findOne({ where: { walletAddress: normalized } });
+      if (row) {
+        if (row.code !== userCode) {
+          row.code = userCode;
+          await this.codeRepo.save(row);
+        }
+        return { code: row.code };
+      }
+      row = this.codeRepo.create({ walletAddress: normalized, code: userCode });
+      await this.codeRepo.save(row);
+      return { code: userCode };
+    }
+
+    // Fallback: no user or no referralCode – use referral_codes table only
     let row = await this.codeRepo.findOne({ where: { walletAddress: normalized } });
     if (row) return { code: row.code };
     const code = await this.ensureCode(generateCode());
