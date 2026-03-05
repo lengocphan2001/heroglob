@@ -9,8 +9,11 @@ import { Order } from '../orders/entities/order.entity';
 import { SystemConfigService } from '../system-config/system-config.service';
 import { UsersService } from '../users/users.service';
 import { ActivePowerService } from '../active-power/active-power.service';
+import { ReferralsService } from '../referrals/referrals.service';
+import { CommissionsService } from '../commissions/commissions.service';
 
 const PAYOUT_CRON_NAME = 'scheduled-payout';
+const DAILY_REWARD_REFERRER_PERCENT = 0.1;
 
 @Injectable()
 export class InvestmentsService implements OnModuleInit {
@@ -26,6 +29,8 @@ export class InvestmentsService implements OnModuleInit {
         private configService: SystemConfigService,
         private usersService: UsersService,
         private activePowerService: ActivePowerService,
+        private referralsService: ReferralsService,
+        private commissionsService: CommissionsService,
         private scheduler: SchedulerRegistry,
     ) { }
 

@@ -8,13 +8,17 @@ import { Order } from '../orders/entities/order.entity';
 import { SystemConfigModule } from '../system-config/system-config.module';
 import { UsersModule } from '../users/users.module';
 import { ActivePowerModule } from '../active-power/active-power.module';
+import { ReferralsModule } from '../referrals/referrals.module';
+import { CommissionsModule } from '../commissions/commissions.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Investment, Payout, Order]),
     SystemConfigModule,
     UsersModule,
-    ActivePowerModule
+    ActivePowerModule,
+    ReferralsModule,
+    CommissionsModule,
   ],
   providers: [InvestmentsService],
   controllers: [InvestmentsController],
