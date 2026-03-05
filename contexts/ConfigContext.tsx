@@ -9,6 +9,7 @@ type ConfigState = {
     tokenName: string;
     tokenSymbol: string;
     paymentReceiverAddress: string;
+    heroTokenAddress: string;
 };
 
 const ConfigContext = createContext<ConfigState>({
@@ -17,6 +18,7 @@ const ConfigContext = createContext<ConfigState>({
     tokenName: 'Hero Coin',
     tokenSymbol: 'HERO',
     paymentReceiverAddress: '',
+    heroTokenAddress: '',
 });
 
 export function ConfigProvider({ children }: { children: ReactNode }) {
@@ -26,6 +28,7 @@ export function ConfigProvider({ children }: { children: ReactNode }) {
         tokenName: 'Hero Coin',
         tokenSymbol: 'HERO',
         paymentReceiverAddress: '',
+        heroTokenAddress: '',
     });
 
     useEffect(() => {

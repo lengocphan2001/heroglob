@@ -30,7 +30,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const slug = (params?.id as string) ?? '';
   const { isConnected, address, chainId } = useWallet();
-  const { tokenSymbol, paymentReceiverAddress } = useConfig();
+  const { tokenSymbol, paymentReceiverAddress, heroTokenAddress } = useConfig();
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -146,7 +146,7 @@ export default function ProductDetailPage() {
     const priceHero = product.priceHero ?? '0';
     if (parseFloat(priceHero) <= 0) return;
     const amountDisplay = formatPriceDisplay(priceHero);
-    const heroAddress = HERO_TOKEN.address;
+    const heroAddress = heroTokenAddress || HERO_TOKEN.address; // use config address, fall back to hardcoded
     setBuying('hero');
     setTxModal({
       open: true,
@@ -186,7 +186,7 @@ export default function ProductDetailPage() {
         }
       },
     });
-  }, [product, isConnected, address, tokenSymbol, paymentReceiverAddress]);
+  }, [product, isConnected, address, tokenSymbol, paymentReceiverAddress, heroTokenAddress]);
 
   if (loading) {
     return (

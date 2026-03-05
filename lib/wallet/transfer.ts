@@ -125,13 +125,15 @@ export async function checkBalance(
       throw new Error(`Số dư không đủ. Bạn có ${friendlyBalance} ${tokenLabel} (Raw: ${balance}), cần ${friendlyNeeded} ${tokenLabel}. Vui lòng nạp ${tokenLabel} trên BSC (BEP20).`);
     }
   } catch (err: any) {
-    if (err.message && err.message.includes('Insufficient balance')) {
+    // Re-throw balance errors directly (both Vietnamese "Số dư không đủ" and English variants)
+    if (err.message && (
+      err.message.includes('Số dư không đủ') ||
+      err.message.includes('Insufficient balance')
+    )) {
       throw err;
     }
+    // Only wrap genuine RPC/network errors
     console.error('Failed to check balance:', err);
-    // If we can't check balance (e.g. RPC error), we might want to let the wallet try ensuring the tx?
-    // But user asked to "make it clear".
-    // Let's wrap the error to be visible.
     throw new Error(`Could not verify balance (RPC Error): ${err.message || 'Unknown'}`);
   }
 }
