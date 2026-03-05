@@ -146,6 +146,7 @@ export default function WalletPage() {
                   symbol={tokenSymbol}
                   networkLabel="BEP-20"
                   amount={`${(balance?.heroBalance ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                  onWithdraw={() => handleWithdraw('hero')}
                 />
               </>
             )}
