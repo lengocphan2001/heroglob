@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { InvestmentsService } from './investments.service';
 
@@ -51,5 +51,23 @@ export class InvestmentsController {
         }
         await this.investmentsService.handleDailyPayout();
         return { message: 'Daily payout triggered successfully' };
+    }
+
+    @Delete('admin/payouts/cycle')
+    @UseGuards(AuthGuard('jwt'))
+    async removePayoutCycle(@Req() req, @Body() body: { orderId?: number; investmentId?: number }) {
+        if (req.user?.role !== 'admin') {
+            return { error: 'Unauthorized' };
+        }
+        return this.investmentsService.removePayoutCycle(body);
+    }
+
+    @Delete('admin/payouts/:id')
+    @UseGuards(AuthGuard('jwt'))
+    async removePayout(@Req() req, @Param('id') id: string) {
+        if (req.user?.role !== 'admin') {
+            return { error: 'Unauthorized' };
+        }
+        return this.investmentsService.removePayout(parseInt(id, 10));
     }
 }

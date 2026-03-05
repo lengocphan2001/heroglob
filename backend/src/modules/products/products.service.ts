@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { randomBytes } from 'crypto';
 import { Repository } from 'typeorm';
@@ -6,6 +7,7 @@ import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { InvestmentsService } from '../investments/investments.service';
+import { rewriteImageUrlToPublic } from '../../common/utils/image-url';
 
 function generateHashId(): string {
   return randomBytes(12).toString('base64url');
@@ -17,7 +19,16 @@ export class ProductsService {
     @InjectRepository(Product)
     private readonly repo: Repository<Product>,
     private readonly investmentsService: InvestmentsService,
+    private readonly config: ConfigService,
   ) { }
+
+  private applyPublicImageUrl(product: Product): void {
+    const publicUrl = this.config.get<string>('app.publicUrl', '');
+    if (publicUrl && !publicUrl.includes('localhost')) {
+      const rewritten = rewriteImageUrlToPublic(product.imageUrl, publicUrl);
+      if (rewritten) product.imageUrl = rewritten;
+    }
+  }
 
   async findAll(category?: string): Promise<Product[]> {
     const qb = this.repo.createQueryBuilder('p').orderBy('p.created_at', 'DESC');
@@ -27,6 +38,7 @@ export class ProductsService {
     const list = await qb.getMany();
     for (const p of list) {
       if (!p.hashId) await this.ensureHashId(p);
+      this.applyPublicImageUrl(p);
     }
     return list;
   }
@@ -45,6 +57,7 @@ export class ProductsService {
       : await this.repo.findOne({ where: { hashId: identifier } });
     if (!product) throw new NotFoundException('Product not found');
     if (!product.hashId) await this.ensureHashId(product);
+    this.applyPublicImageUrl(product);
     return product;
   }
 
@@ -52,6 +65,7 @@ export class ProductsService {
     const product = await this.repo.findOne({ where: { id } });
     if (!product) throw new NotFoundException('Product not found');
     if (!product.hashId) await this.ensureHashId(product);
+    this.applyPublicImageUrl(product);
     return product;
   }
 

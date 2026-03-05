@@ -163,6 +163,10 @@ export class InvestmentsService implements OnModuleInit {
                     await this.usersService.updateUsdtBalance(payout.userId, amount);
                 } else {
                     await this.usersService.updateBalance(payout.userId, amount);
+                    // Referrer gets 10% of daily reward (product order_daily only)
+                    if (payout.type === 'order_daily' && amount > 0) {
+                        await this.creditReferrerFromDailyReward(payout, amount);
+                    }
                 }
                 payout.status = 'paid';
                 await this.payoutRepository.save(payout);
@@ -193,6 +197,9 @@ export class InvestmentsService implements OnModuleInit {
                     await this.usersService.updateUsdtBalance(payout.userId, amount);
                 } else {
                     await this.usersService.updateBalance(payout.userId, amount);
+                    if (payout.type === 'order_daily' && amount > 0) {
+                        await this.creditReferrerFromDailyReward(payout, amount);
+                    }
                 }
                 payout.status = 'paid';
                 await this.payoutRepository.save(payout);
@@ -203,6 +210,36 @@ export class InvestmentsService implements OnModuleInit {
             }
         }
         return toProcess.length;
+    }
+
+    /**
+     * When a user receives a product daily reward (order_daily), their referrer gets 10%.
+     */
+    private async creditReferrerFromDailyReward(payout: Payout, recipientAmount: number): Promise<void> {
+        const recipientWallet =
+            payout.walletAddress?.trim().toLowerCase() ||
+            (await this.usersService.findOne(payout.userId))?.walletAddress?.trim().toLowerCase();
+        if (!recipientWallet) return;
+
+        const referrerWallet = await this.referralsService.getReferrer(recipientWallet);
+        if (!referrerWallet) return;
+
+        const commissionAmount = Math.max(0, recipientAmount * DAILY_REWARD_REFERRER_PERCENT);
+        if (commissionAmount <= 0) return;
+
+        const referrerUser = await this.usersService.findByWallet(referrerWallet);
+        if (!referrerUser) return;
+
+        await this.usersService.updateBalance(referrerUser.id, commissionAmount);
+        await this.commissionsService.createCommission(
+            referrerWallet,
+            recipientWallet,
+            commissionAmount.toFixed(6),
+            'hero',
+            payout.orderId ?? 0,
+            'completed',
+        );
+        this.logger.log(`Referrer ${referrerWallet} received 10% (${commissionAmount}) of daily reward for payout ${payout.id}`);
     }
 
     /**
@@ -281,5 +318,49 @@ export class InvestmentsService implements OnModuleInit {
             order: { scheduledAt: 'ASC', createdAt: 'DESC' },
             take: 200,
         });
+    }
+
+    /**
+     * Remove a single payout by id. Only pending payouts can be removed.
+     */
+    async removePayout(id: number): Promise<{ deleted: boolean; message: string }> {
+        const payout = await this.payoutRepository.findOne({ where: { id } });
+        if (!payout) {
+            return { deleted: false, message: 'Payout not found' };
+        }
+        if (payout.status !== 'pending') {
+            return { deleted: false, message: 'Only pending payouts can be removed' };
+        }
+        await this.payoutRepository.remove(payout);
+        this.logger.log(`Removed pending payout ${id}`);
+        return { deleted: true, message: 'Payout removed' };
+    }
+
+    /**
+     * Remove all pending payouts in a cycle (by orderId or investmentId).
+     */
+    async removePayoutCycle(params: { orderId?: number; investmentId?: number }): Promise<{ deleted: number; message: string }> {
+        const { orderId, investmentId } = params;
+        if (orderId != null) {
+            const result = await this.payoutRepository.delete({
+                orderId,
+                type: 'order_daily',
+                status: 'pending',
+            });
+            const count = result.affected ?? 0;
+            this.logger.log(`Removed ${count} pending payouts for order ${orderId}`);
+            return { deleted: count, message: `Removed ${count} pending payout(s) for Order #${orderId}` };
+        }
+        if (investmentId != null) {
+            const result = await this.payoutRepository.delete({
+                investmentId,
+                type: 'investment_daily',
+                status: 'pending',
+            });
+            const count = result.affected ?? 0;
+            this.logger.log(`Removed ${count} pending payouts for investment ${investmentId}`);
+            return { deleted: count, message: `Removed ${count} pending payout(s) for Active Power #${investmentId}` };
+        }
+        return { deleted: 0, message: 'Provide orderId or investmentId' };
     }
 }

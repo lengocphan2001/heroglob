@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Order } from './entities/order.entity';
@@ -7,9 +8,7 @@ import { CommissionsService } from '../commissions/commissions.service';
 import { ReferralsService } from '../referrals/referrals.service';
 import { NFTsService } from '../nfts/nfts.service';
 import { UsersService } from '../users/users.service';
-import { InvestmentsService } from '../investments/investments.service';
-import { SystemConfigService } from '../system-config/system-config.service';
-import { ProductsService } from '../products/products.service';
+import { rewriteImageUrlToPublic } from '../../common/utils/image-url';
 
 @Injectable()
 export class OrdersService {
@@ -20,9 +19,7 @@ export class OrdersService {
     private readonly referralsService: ReferralsService,
     private readonly nftsService: NFTsService,
     private readonly usersService: UsersService,
-    private readonly investmentsService: InvestmentsService,
-    private readonly configService: SystemConfigService,
-    private readonly productsService: ProductsService,
+    private readonly config: ConfigService,
   ) { }
 
   async create(dto: CreateOrderDto): Promise<Order> {
@@ -75,32 +72,7 @@ export class OrdersService {
       // Do not fail order creation if commission fails
     }
 
-    // Schedule daily token (HERO) payouts for product purchase: use product's Daily HERO Reward, cap by Max HERO Reward.
-    try {
-      if (dto.productId) {
-        const product = await this.productsService.findOne(dto.productId);
-        const dailyReward = Number(product.dailyHeroReward) || 0;
-        const maxReward = Number(product.maxHeroReward) || 0;
-        const maxDaysConfig = parseInt(await this.configService.get('PRODUCT_PURCHASE_PAYOUT_DAYS', '30'), 10);
-
-        if (dailyReward > 0 && maxDaysConfig > 0) {
-          let numberOfDays = maxDaysConfig;
-          if (maxReward > 0) {
-            const capDays = Math.ceil(maxReward / dailyReward);
-            numberOfDays = Math.min(maxDaysConfig, capDays);
-          }
-          await this.investmentsService.scheduleOrderPayouts(
-            user.id,
-            user.walletAddress ?? dto.walletAddress,
-            savedOrder.id,
-            dailyReward,
-            numberOfDays,
-          );
-        }
-      }
-    } catch (e) {
-      console.error('Error scheduling order payouts:', e);
-    }
+    // Daily rewards are from NFT ownership only (NFT cron). No order_daily payouts scheduled on purchase.
 
     return savedOrder;
   }
@@ -156,12 +128,16 @@ export class OrdersService {
         existing.quantity += 1;
         existing.totalSpent += Number(order.amount);
       } else {
+        const publicUrl = this.config.get<string>('app.publicUrl', '');
+        const imageUrl = publicUrl && !publicUrl.includes('localhost')
+          ? (rewriteImageUrlToPublic(order.product.imageUrl, publicUrl) ?? order.product.imageUrl)
+          : order.product.imageUrl;
         productMap.set(productId, {
           productId: order.product.id,
           hashId: order.product.hashId,
           title: order.product.title,
           description: order.product.description,
-          imageUrl: order.product.imageUrl,
+          imageUrl,
           creatorHandle: order.product.creatorHandle,
           creatorAvatarUrl: order.product.creatorAvatarUrl,
           quantity: 1,

@@ -22,4 +22,11 @@ export type Payout = {
 export const payoutsApi = {
     getAll: () => api<Payout[]>('/investments/payouts'),
     runManualPayout: () => api<{ message: string }>('/investments/admin/run-payout', { method: 'POST' }),
+    deletePayout: (id: number) =>
+        api<{ deleted: boolean; message: string }>(`/investments/admin/payouts/${id}`, { method: 'DELETE' }),
+    deleteCycle: (params: { orderId?: number; investmentId?: number }) =>
+        api<{ deleted: number; message: string }>('/investments/admin/payouts/cycle', {
+            method: 'DELETE',
+            body: JSON.stringify(params),
+        }),
 };

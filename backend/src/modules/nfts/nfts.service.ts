@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NFT } from './entities/nft.entity';
 import { Product } from '../products/entities/product.entity';
+import { rewriteImageUrlToPublic } from '../../common/utils/image-url';
 
 @Injectable()
 export class NFTsService {
@@ -11,6 +13,7 @@ export class NFTsService {
         private nftRepo: Repository<NFT>,
         @InjectRepository(Product)
         private productRepo: Repository<Product>,
+        private readonly config: ConfigService,
     ) { }
 
     async createNFT(userId: number, walletAddress: string, productId: number, orderId?: number) {
@@ -62,15 +65,20 @@ export class NFTsService {
 
         // Combine NFT data with product details
         const result: any[] = [];
+        const publicUrl = this.config.get<string>('app.publicUrl', '');
+        const rewriteUrl = publicUrl && !publicUrl.includes('localhost');
         for (const [productId, nftData] of productMap.entries()) {
             const product = productDetailsMap.get(productId);
             if (product) {
+                const imageUrl = rewriteUrl
+                    ? (rewriteImageUrlToPublic(product.imageUrl, publicUrl) ?? product.imageUrl)
+                    : product.imageUrl;
                 result.push({
                     productId: product.id,
                     hashId: product.hashId,
                     title: product.title,
                     description: product.description,
-                    imageUrl: product.imageUrl,
+                    imageUrl,
                     creatorHandle: product.creatorHandle,
                     creatorAvatarUrl: product.creatorAvatarUrl,
                     quantity: nftData.quantity,

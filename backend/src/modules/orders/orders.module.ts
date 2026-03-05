@@ -7,9 +7,6 @@ import { ReferralsModule } from '../referrals/referrals.module';
 import { CommissionsModule } from '../commissions/commissions.module';
 import { NFTsModule } from '../nfts/nfts.module';
 import { UsersModule } from '../users/users.module';
-import { InvestmentsModule } from '../investments/investments.module';
-import { SystemConfigModule } from '../system-config/system-config.module';
-import { ProductsModule } from '../products/products.module';
 
 @Module({
   imports: [
@@ -18,9 +15,6 @@ import { ProductsModule } from '../products/products.module';
     CommissionsModule,
     NFTsModule,
     UsersModule,
-    InvestmentsModule,
-    SystemConfigModule,
-    ProductsModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

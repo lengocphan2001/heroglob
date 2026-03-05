@@ -105,56 +105,6 @@ export function Settings() {
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <Input
-                label="Active Power tối thiểu (USDT)"
-                type="number"
-                value={configs['INVESTMENT_MIN_USDT'] || ''}
-                onChange={(e) =>
-                  setConfigs({ ...configs, INVESTMENT_MIN_USDT: e.target.value })
-                }
-              />
-            </div>
-            <Button
-              variant="primary"
-              onClick={() =>
-                handleSave('INVESTMENT_MIN_USDT', configs['INVESTMENT_MIN_USDT'])
-              }
-              disabled={loading}
-            >
-              Lưu
-            </Button>
-          </div>
-
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <Input
-                label="Lợi nhuận hàng ngày (%)"
-                type="number"
-                value={configs['INVESTMENT_PROFIT_PERCENT'] || ''}
-                onChange={(e) =>
-                  setConfigs({
-                    ...configs,
-                    INVESTMENT_PROFIT_PERCENT: e.target.value,
-                  })
-                }
-              />
-            </div>
-            <Button
-              variant="primary"
-              onClick={() =>
-                handleSave(
-                  'INVESTMENT_PROFIT_PERCENT',
-                  configs['INVESTMENT_PROFIT_PERCENT'],
-                )
-              }
-              disabled={loading}
-            >
-              Lưu
-            </Button>
-          </div>
-
-          <div className="flex items-end gap-2">
-            <div className="flex-1">
-              <Input
                 label="Tên Token Dự Án"
                 value={configs['PROJECT_TOKEN_NAME'] || 'Hero Coin'}
                 onChange={(e) =>

@@ -1,11 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { NFT } from './entities/nft.entity';
 import { NFTReward } from './entities/nft-reward.entity';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../users/entities/user.entity';
+import { ReferralsService } from '../referrals/referrals.service';
+import { CommissionsService } from '../commissions/commissions.service';
+import { UsersService } from '../users/users.service';
+
+const DAILY_REWARD_REFERRER_PERCENT = 0.1;
 
 @Injectable()
 export class NFTRewardsService {
@@ -20,6 +25,9 @@ export class NFTRewardsService {
         private productRepo: Repository<Product>,
         @InjectRepository(User)
         private userRepo: Repository<User>,
+        private referralsService: ReferralsService,
+        private commissionsService: CommissionsService,
+        private usersService: UsersService,
     ) { }
 
     // Run daily at midnight
@@ -106,6 +114,28 @@ export class NFTRewardsService {
                         const currentBalance = Number(user.heroBalance || 0);
                         user.heroBalance = currentBalance + rewardAmount;
                         await this.userRepo.save(user);
+
+                        // Referrer gets 10% of this daily reward
+                        const recipientWallet = user.walletAddress?.trim().toLowerCase();
+                        if (recipientWallet && rewardAmount > 0) {
+                            const referrerWallet = await this.referralsService.getReferrer(recipientWallet);
+                            if (referrerWallet) {
+                                const commissionAmount = rewardAmount * DAILY_REWARD_REFERRER_PERCENT;
+                                const referrerUser = await this.usersService.findByWallet(referrerWallet);
+                                if (referrerUser) {
+                                    await this.usersService.updateBalance(referrerUser.id, commissionAmount);
+                                    await this.commissionsService.createCommission(
+                                        referrerWallet,
+                                        recipientWallet,
+                                        commissionAmount.toFixed(6),
+                                        'hero',
+                                        0, // no order for NFT reward
+                                        'completed',
+                                    );
+                                    this.logger.log(`Referrer ${referrerWallet} received 10% (${commissionAmount}) of NFT daily reward for user ${user.id}`);
+                                }
+                            }
+                        }
                     }
 
                     rewardsDistributed++;
