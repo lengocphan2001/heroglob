@@ -102,6 +102,9 @@ export class TransactionsService {
                 description = 'Thưởng mua sản phẩm';
             }
 
+            // Use scheduledAt as the transaction date so payouts appear when they were paid, not when the schedule was created
+            const payoutDate = payout.scheduledAt ? new Date(payout.scheduledAt) : payout.createdAt;
+
             // Package payouts are USDT in-app; product and rank payouts are token (HERO) in-app.
             const tokenType = payout.type === 'investment_daily' ? 'usdt' : 'hero';
             transactions.push({
@@ -110,7 +113,7 @@ export class TransactionsService {
                 amount: Number(payout.amount),
                 tokenType,
                 description,
-                createdAt: payout.createdAt,
+                createdAt: payoutDate,
                 metadata: {
                     payoutType: payout.type,
                     investmentId: payout.investmentId,
