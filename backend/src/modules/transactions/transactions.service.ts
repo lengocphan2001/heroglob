@@ -93,13 +93,14 @@ export class TransactionsService {
         });
 
         for (const payout of payouts) {
+            // Skip order_daily – daily rewards are from NFT only; showing both would duplicate "Thưởng NFT hàng ngày"
+            if (payout.type === 'order_daily') continue;
+
             let description = 'Thanh toán';
             if (payout.type === 'rank_daily') {
                 description = 'Thưởng hạng';
             } else if (payout.type === 'investment_daily') {
                 description = 'Lợi nhuận đầu tư';
-            } else if (payout.type === 'order_daily') {
-                description = 'Thưởng mua sản phẩm';
             }
 
             // Use scheduledAt as the transaction date so payouts appear when they were paid, not when the schedule was created
