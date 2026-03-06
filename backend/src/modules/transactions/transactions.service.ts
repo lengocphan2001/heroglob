@@ -122,34 +122,26 @@ export class TransactionsService {
             });
         }
 
-        // Get NFT rewards – aggregate by reward date so we show one "Phần thưởng NFT hàng ngày" per day
+        // Get NFT rewards – one record per reward (no aggregation)
         const nftRewards = await this.nftRewardRepo.find({
             where: { userId },
-            order: { rewardDate: 'DESC' },
-            take: 200,
+            order: { createdAt: 'DESC' },
+            take: 100,
         });
 
-        const nftRewardsByDate = new Map<string, { total: number; date: Date }>();
         for (const reward of nftRewards) {
-            const d = reward.rewardDate instanceof Date ? reward.rewardDate : new Date(reward.rewardDate);
-            const key = d.toISOString().slice(0, 10); // YYYY-MM-DD
-            const existing = nftRewardsByDate.get(key);
-            const amount = Number(reward.rewardAmount);
-            if (existing) {
-                existing.total += amount;
-            } else {
-                nftRewardsByDate.set(key, { total: amount, date: d });
-            }
-        }
-        for (const [key, { total, date }] of nftRewardsByDate) {
             transactions.push({
-                id: `nft-reward-day-${key}`,
+                id: `nft-reward-${reward.id}`,
                 type: 'nft_reward',
-                amount: total,
+                amount: Number(reward.rewardAmount),
                 tokenType: 'hero',
                 description: 'Phần thưởng NFT hàng ngày',
-                createdAt: date,
-                metadata: { rewardDate: key },
+                createdAt: reward.createdAt,
+                metadata: {
+                    nftId: reward.nftId,
+                    productId: reward.productId,
+                    rewardDate: reward.rewardDate,
+                },
             });
         }
 
