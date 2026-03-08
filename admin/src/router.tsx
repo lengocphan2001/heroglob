@@ -12,6 +12,7 @@ import { Orders } from './pages/Orders';
 import { Categories } from './pages/Categories';
 import { ActivePower } from './pages/ActivePower';
 import { Withdrawals } from './pages/Withdrawals';
+import { ReferralTree } from './pages/ReferralTree';
 
 const router = createBrowserRouter([
   {
@@ -36,6 +37,7 @@ const router = createBrowserRouter([
       { path: 'orders', element: <Orders /> },
       { path: 'payouts', element: <Payouts /> },
       { path: 'active-power', element: <ActivePower /> },
+      { path: 'referral-tree', element: <ReferralTree /> },
       { path: 'withdrawals', element: <Withdrawals /> },
       { path: 'settings', element: <Settings /> },
       { path: '*', element: <Navigate to="/dashboard" replace /> },

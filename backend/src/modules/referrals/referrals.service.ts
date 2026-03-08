@@ -6,6 +6,14 @@ import { ReferralCode } from './entities/referral-code.entity';
 import { Referral } from './entities/referral.entity';
 import { UsersService } from '../users/users.service';
 
+export type TreeNode = {
+  wallet: string;
+  name?: string | null;
+  level: number;
+  joinedAt?: string | null;
+  children: TreeNode[];
+};
+
 function generateCode(): string {
   return randomBytes(5).toString('base64url').slice(0, 8).replace(/[-_]/g, 'x');
 }
@@ -130,5 +138,49 @@ export class ReferralsService {
       where: { referredWallet: walletAddress.trim().toLowerCase() },
     });
     return referral?.referrerWallet ?? null;
+  }
+
+  /** Direct downlines (F1) for a wallet from referrals table */
+  async getDirectReferrals(walletAddress: string): Promise<{ referredWallet: string; createdAt: Date }[]> {
+    const wallet = walletAddress.trim().toLowerCase();
+    const rows = await this.referralRepo.find({
+      where: { referrerWallet: wallet },
+      order: { createdAt: 'ASC' },
+    });
+    return rows.map((r) => ({ referredWallet: r.referredWallet, createdAt: r.createdAt }));
+  }
+
+  /**
+   * Build referral tree (cây phân cấp) for a wallet. Root is the given wallet, children are F1, F2, ...
+   * Uses referrals table. Max depth 5 to limit payload.
+   */
+  async getTree(walletAddress: string, maxDepth = 5): Promise<TreeNode> {
+    const wallet = walletAddress.trim().toLowerCase();
+    const user = await this.usersService.findByWalletAddress(wallet);
+    const root: TreeNode = {
+      wallet,
+      name: user?.name ?? null,
+      level: 0,
+      joinedAt: user?.createdAt?.toISOString?.() ?? null,
+      children: [],
+    };
+    const build = async (node: TreeNode, depth: number): Promise<void> => {
+      if (depth >= maxDepth) return;
+      const direct = await this.getDirectReferrals(node.wallet);
+      for (const { referredWallet, createdAt } of direct) {
+        const childUser = await this.usersService.findByWalletAddress(referredWallet);
+        const child: TreeNode = {
+          wallet: referredWallet,
+          name: childUser?.name ?? null,
+          level: depth + 1,
+          joinedAt: createdAt?.toISOString?.() ?? null,
+          children: [],
+        };
+        await build(child, depth + 1);
+        node.children.push(child);
+      }
+    };
+    await build(root, 0);
+    return root;
   }
 }

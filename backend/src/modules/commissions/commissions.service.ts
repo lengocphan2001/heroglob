@@ -48,6 +48,7 @@ export class CommissionsService {
         tokenType: string,
         orderId: number,
         status: 'pending' | 'completed' = 'pending',
+        source?: string | null,
     ): Promise<Commission> {
         const commission = this.repo.create({
             referrerWallet,
@@ -56,6 +57,7 @@ export class CommissionsService {
             tokenType,
             orderId,
             status,
+            source: source ?? null,
         });
         return this.repo.save(commission);
     }

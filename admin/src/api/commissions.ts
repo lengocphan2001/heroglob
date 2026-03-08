@@ -7,6 +7,7 @@ export type Commission = {
     amount: string;
     tokenType: string;
     orderId: number;
+    source?: string | null;
     status: 'pending' | 'completed';
     createdAt: string;
 };

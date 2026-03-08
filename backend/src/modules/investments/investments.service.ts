@@ -166,11 +166,13 @@ export class InvestmentsService implements OnModuleInit {
                 // Package (Active Power): pay USDT in-app balance. Product & rank: pay token (HERO) in-app balance.
                 if (payout.type === 'investment_daily') {
                     await this.usersService.updateUsdtBalance(payout.userId, amount);
+                    if (amount > 0) {
+                        await this.creditReferrerFromPayout(payout, amount, 'usdt', 'investment_daily');
+                    }
                 } else {
                     await this.usersService.updateBalance(payout.userId, amount);
-                    // Referrer gets 10% of daily reward (product order_daily only)
                     if (payout.type === 'order_daily' && amount > 0) {
-                        await this.creditReferrerFromDailyReward(payout, amount);
+                        await this.creditReferrerFromPayout(payout, amount, 'hero', 'order');
                     }
                 }
                 payout.status = 'paid';
@@ -200,10 +202,13 @@ export class InvestmentsService implements OnModuleInit {
                 const amount = Number(payout.amount);
                 if (payout.type === 'investment_daily') {
                     await this.usersService.updateUsdtBalance(payout.userId, amount);
+                    if (amount > 0) {
+                        await this.creditReferrerFromPayout(payout, amount, 'usdt', 'investment_daily');
+                    }
                 } else {
                     await this.usersService.updateBalance(payout.userId, amount);
                     if (payout.type === 'order_daily' && amount > 0) {
-                        await this.creditReferrerFromDailyReward(payout, amount);
+                        await this.creditReferrerFromPayout(payout, amount, 'hero', 'order');
                     }
                 }
                 payout.status = 'paid';
@@ -218,9 +223,15 @@ export class InvestmentsService implements OnModuleInit {
     }
 
     /**
-     * When a user receives a product daily reward (order_daily), their referrer gets 10%.
+     * When a user receives a daily payout (order_daily or investment_daily), their referrer gets 10%.
+     * Active Power = USDT, NFT/order = token (hero).
      */
-    private async creditReferrerFromDailyReward(payout: Payout, recipientAmount: number): Promise<void> {
+    private async creditReferrerFromPayout(
+        payout: Payout,
+        recipientAmount: number,
+        tokenType: 'hero' | 'usdt',
+        source: string,
+    ): Promise<void> {
         const recipientWallet =
             payout.walletAddress?.trim().toLowerCase() ||
             (await this.usersService.findOne(payout.userId))?.walletAddress?.trim().toLowerCase();
@@ -235,16 +246,21 @@ export class InvestmentsService implements OnModuleInit {
         const referrerUser = await this.usersService.findByWallet(referrerWallet);
         if (!referrerUser) return;
 
-        await this.usersService.updateBalance(referrerUser.id, commissionAmount);
+        if (tokenType === 'usdt') {
+            await this.usersService.updateUsdtBalance(referrerUser.id, commissionAmount);
+        } else {
+            await this.usersService.updateBalance(referrerUser.id, commissionAmount);
+        }
         await this.commissionsService.createCommission(
             referrerWallet,
             recipientWallet,
             commissionAmount.toFixed(6),
-            'hero',
+            tokenType,
             payout.orderId ?? 0,
             'completed',
+            source,
         );
-        this.logger.log(`Referrer ${referrerWallet} received 10% (${commissionAmount}) of daily reward for payout ${payout.id}`);
+        this.logger.log(`Referrer ${referrerWallet} received 10% (${commissionAmount} ${tokenType}) of ${source} payout ${payout.id}`);
     }
 
     /**

@@ -131,6 +131,7 @@ export class NFTRewardsService {
                                         'hero',
                                         0, // no order for NFT reward
                                         'completed',
+                                        'nft_reward',
                                     );
                                     this.logger.log(`Referrer ${referrerWallet} received 10% (${commissionAmount}) of NFT daily reward for user ${user.id}`);
                                 }

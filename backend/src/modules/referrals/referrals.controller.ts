@@ -38,4 +38,12 @@ export class ReferralsController {
     if (!walletAddress?.trim()) return [];
     return this.referralsService.getList(walletAddress);
   }
+
+  @Get('tree')
+  getTree(@Query('walletAddress') walletAddress: string) {
+    if (!walletAddress?.trim()) {
+      return { wallet: '', name: null, level: 0, joinedAt: null, children: [] };
+    }
+    return this.referralsService.getTree(walletAddress);
+  }
 }

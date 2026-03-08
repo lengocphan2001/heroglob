@@ -30,6 +30,9 @@ export class Commission {
     @Column({ type: 'varchar', length: 20, default: 'pending' })
     status: string; // 'pending' | 'completed'
 
+    @Column({ type: 'varchar', length: 32, name: 'source', nullable: true })
+    source: string | null;
+
     @CreateDateColumn({ name: 'created_at' })
     createdAt: Date;
 }

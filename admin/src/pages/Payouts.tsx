@@ -4,6 +4,7 @@ import { Card } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
 import { Button } from '../components/ui/Button';
 import { payoutsApi, type Payout } from '../api/payouts';
+import { commissionsApi, type Commission } from '../api/commissions';
 import { useTokenConfig } from '../contexts/ConfigContext';
 import { Eye, Trash2 } from 'lucide-react';
 
@@ -44,9 +45,17 @@ type GroupRow = {
     payouts: Payout[];
 };
 
+function getCommissionSourceLabel(source?: string | null): string {
+    if (source === 'investment_daily') return 'Active Power';
+    if (source === 'nft_reward') return 'NFT';
+    if (source === 'order') return 'Đơn hàng';
+    return '—';
+}
+
 export function Payouts() {
     const { tokenSymbol } = useTokenConfig();
     const [payouts, setPayouts] = useState<Payout[]>([]);
+    const [commissions, setCommissions] = useState<Commission[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<FilterType>('all');
     const [viewGroup, setViewGroup] = useState<GroupRow | null>(null);
@@ -62,8 +71,12 @@ export function Payouts() {
     const fetchPayouts = async () => {
         try {
             setLoading(true);
-            const data = await payoutsApi.getAll();
-            setPayouts(data);
+            const [payoutData, commissionData] = await Promise.all([
+                payoutsApi.getAll(),
+                commissionsApi.getAll().catch(() => []).then((r) => (Array.isArray(r) ? r : [])),
+            ]);
+            setPayouts(payoutData);
+            setCommissions(Array.isArray(commissionData) ? commissionData : []);
         } catch (error) {
             console.error(error);
             toast.error('Failed to load payouts');
@@ -277,6 +290,55 @@ export function Payouts() {
                                         </td>
                                     </tr>
                                 ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </Card>
+
+            <Card title="Hoa hồng 10% cho người giới thiệu">
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
+                    Khi user nhận thưởng (Active Power hoặc NFT hàng ngày), người giới thiệu của họ nhận 10% (USDT với Active Power và {tokenSymbol} với NFT). Danh sách dưới đây là các hoa hồng đã trả.
+                </p>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm text-zinc-500 dark:text-zinc-400">
+                        <thead className="text-xs uppercase text-zinc-700 dark:text-zinc-300 bg-zinc-50 dark:bg-zinc-800">
+                            <tr>
+                                <th className="px-6 py-3">Ngày</th>
+                                <th className="px-6 py-3">Người giới thiệu (referrer)</th>
+                                <th className="px-6 py-3">Từ ví (referred)</th>
+                                <th className="px-6 py-3">Nguồn</th>
+                                <th className="px-6 py-3">Số tiền</th>
+                                <th className="px-6 py-3">Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {commissions.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-4 text-center text-zinc-500">
+                                        Chưa có hoa hồng nào hoặc không thể tải.
+                                    </td>
+                                </tr>
+                            ) : (
+                                commissions
+                                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                                    .slice(0, 100)
+                                    .map((c) => (
+                                        <tr key={c.id} className="border-b bg-white dark:border-zinc-700 dark:bg-zinc-900">
+                                            <td className="px-6 py-4 whitespace-nowrap">{new Date(c.createdAt).toLocaleString('vi-VN')}</td>
+                                            <td className="px-6 py-4 font-mono text-xs">{c.referrerWallet?.slice(0, 6)}...{c.referrerWallet?.slice(-4)}</td>
+                                            <td className="px-6 py-4 font-mono text-xs">{c.fromWallet?.slice(0, 6)}...{c.fromWallet?.slice(-4)}</td>
+                                            <td className="px-6 py-4">{getCommissionSourceLabel(c.source)}</td>
+                                            <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
+                                                +{Number(c.amount).toFixed(4)} {c.tokenType === 'hero' ? tokenSymbol : (c.tokenType?.toUpperCase() ?? '')}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <span className={`inline-flex rounded-full px-2 py-0.5 text-xs ${c.status === 'completed' ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200' : 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'}`}>
+                                                    {c.status === 'completed' ? 'Đã trả' : 'Chờ'}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
                             )}
                         </tbody>
                     </table>

@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useWallet } from '@/contexts/WalletContext';
 import { useConfig } from '@/contexts/ConfigContext';
-import { ArrowLeft, Users, Copy, Share2, UserPlus, Coins } from 'lucide-react';
+import Link from 'next/link';
+import { ArrowLeft, Users, Copy, Share2, UserPlus, Coins, GitBranch } from 'lucide-react';
 import { RankSection } from '@/components/sections/wallet';
 
 interface ReferralStats {
@@ -169,6 +170,23 @@ export default function ReferralsPage() {
                 Chia sẻ link giới thiệu
               </button>
             </div>
+
+            {/* Cây phân cấp */}
+            <Link
+              href="/referrals/tree"
+              className="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-[var(--color-border-dark)] bg-[var(--color-surface)] dark:bg-[var(--color-surface-dark)] p-4 mb-6 shadow-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary-wallet)]/10">
+                  <GitBranch className="h-5 w-5 text-[var(--color-primary-wallet)]" />
+                </div>
+                <div>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">Cây phân cấp</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Xem mạng lưới tuyến dưới (F1, F2, F3...)</p>
+                </div>
+              </div>
+              <span className="text-slate-400 dark:text-slate-500">→</span>
+            </Link>
 
             {/* Rank section (Hệ thống anh Hùng – same as wallet) */}
             <div className="mb-8">
